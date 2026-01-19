@@ -1,7 +1,7 @@
 [gd_scene load_steps=7 format=3 uid="uid://dl2bibffowpb4"]
 
-[ext_resource type="PackedScene" uid="uid://dn25a6avlx0kf" path="res://Player.tscn" id="1_gojnm"]
-[ext_resource type="PackedScene" uid="uid://th2etnrw2wps" path="res://Enemy.tscn" id="2_1c2mv"]
+[ext_resource type="PackedScene" uid="uid://dn25a6avlx0kf" path="res://scenes/Player.tscn" id="1_gojnm"]
+[ext_resource type="PackedScene" uid="uid://th2etnrw2wps" path="res://scenes/Enemy.tscn" id="2_1c2mv"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hsoxx"]
 albedo_color = Color(1.3461569e-07, 0.093095414, 6.016344e-09, 1)
@@ -40,7 +40,6 @@ shadow_bias = 1.076
 environment = SubResource("Environment_hsoxx")
 
 [node name="Player" parent="." instance=ExtResource("1_gojnm")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 
 [node name="Enemy" parent="." instance=ExtResource("2_1c2mv")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.878, 2, 6)
