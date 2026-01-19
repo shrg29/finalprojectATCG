@@ -13,9 +13,29 @@ script = ExtResource("1_xhfnw")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
 
 [node name="Camera3D" type="Camera3D" parent="CameraPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.872344, 0)
 current = true
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
 shape = SubResource("CapsuleShape3D_0rwas")
 debug_color = Color(0, 0.5882353, 0.6392157, 0.59607846)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="DangerLabel" type="Label" parent="CanvasLayer"]
+offset_left = 37.0
+offset_top = 27.0
+offset_right = 138.0
+offset_bottom = 55.0
+theme_override_colors/font_color = Color(0.83976364, 0, 0.122233965, 1)
+theme_override_font_sizes/font_size = 22
+text = "Danger: 0.00"
+
+[node name="StaminaLabel" type="Label" parent="CanvasLayer"]
+offset_left = 38.0
+offset_top = 71.0
+offset_right = 189.0
+offset_bottom = 101.0
+theme_override_font_sizes/font_size = 21
+text = "Stamina: 20/20"

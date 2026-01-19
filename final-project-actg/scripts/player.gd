@@ -1,54 +1,120 @@
 extends CharacterBody3D
 
-@export var speed = 5.0
+@export var speed = 2.0
+@export var sprint_speed := 7.0
 @export var mouse_sensitivity = 0.2
 @export var gravity : float = -9.8
+
+# ---------- Stamina ----------
+@export var max_stamina := 20.0         # max stamina
+@export var stamina_drain_rate := 5.0   # per second while sprinting
+@export var stamina_recovery_rate := 4.0 # per second when not sprinting
+@export var stamina_lock_threshold := 0.35 # 35% of max, unlock sprint when above
+
+var stamina := max_stamina
+var can_sprint := true
+
+
+@export var danger_increase_rate := 0.15
+@export var danger_decrease_rate := 0.25
+@export var max_danger := 10.0
+@export var sprint_danger_multiplier := 5.0
+
+@onready var stamina_label := $CanvasLayer/StaminaLabel
+@onready var danger_label := $CanvasLayer/DangerLabel
+@onready var camera_pivot = $CameraPivot
+
+var danger_level := 0.0
 
 var rotation_y = 0.0
 var rotation_x = 0.0
 
-@onready var camera_pivot = $CameraPivot
 
 func _ready():
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
 func _input(event):
+	handle_mouse_look(event)
+
+func _physics_process(delta):
+	var move_dir := get_movement_direction()
+	var is_trying_to_sprint := Input.is_action_pressed("sprint") and move_dir != Vector3.ZERO
+	var is_sprinting := is_trying_to_sprint and can_sprint
+
+	apply_movement(move_dir, is_sprinting)
+	apply_gravity(delta)
+	update_stamina(delta, is_sprinting)
+	update_danger(delta, move_dir != Vector3.ZERO, is_sprinting)
+	update_debug_ui()
+
+	move_and_slide()
+
+func handle_mouse_look(event):
 	if event is InputEventMouseMotion:
-		# Horizontal rotation on player
 		rotation_y -= deg_to_rad(event.relative.x * mouse_sensitivity)
 		rotation.y = rotation_y
-		
-		# Vertical rotation on camera pivot
+
 		rotation_x -= deg_to_rad(event.relative.y * mouse_sensitivity)
 		rotation_x = clamp(rotation_x, deg_to_rad(-89), deg_to_rad(89))
 		camera_pivot.rotation.x = rotation_x
 
-func _physics_process(delta):
-	var direction = Vector3.ZERO
+func get_movement_direction() -> Vector3:
+		var dir := Vector3.ZERO
 
-	# Input mapping (make sure these match your Input Map!)
-	if Input.is_action_pressed("move_forward"):
-		direction -= transform.basis.z
-	if Input.is_action_pressed("move_backward"):
-		direction += transform.basis.z
-	if Input.is_action_pressed("move_left"):
-		direction -= transform.basis.x
-	if Input.is_action_pressed("move_right"):
-		direction += transform.basis.x
+		if Input.is_action_pressed("move_forward"):
+			dir -= transform.basis.z
+		if Input.is_action_pressed("move_backward"):
+			dir += transform.basis.z
+		if Input.is_action_pressed("move_left"):
+			dir -= transform.basis.x
+		if Input.is_action_pressed("move_right"):
+			dir += transform.basis.x
 
-	# Normalize to avoid faster diagonal movement
-	if direction.length() > 0:
-		direction = direction.normalized() * speed
+		return dir.normalized()
+		
+func apply_movement(direction: Vector3, sprinting: bool):
+	var current_speed : float = sprint_speed if sprinting else speed
 
-	# Assign to CharacterBody3D velocity (keep Y for gravity)
-	velocity.x = direction.x
-	velocity.z = direction.z
+	velocity.x = direction.x * current_speed
+	velocity.z = direction.z * current_speed
 
-	# Gravity
+func apply_gravity(delta):
 	if not is_on_floor():
 		velocity.y += gravity * delta
 	else:
 		velocity.y = 0
+		
+func update_stamina(delta, sprinting: bool):
+	if sprinting:
+		stamina -= stamina_drain_rate * delta
+		if stamina <= 0:
+			stamina = 0
+			can_sprint = false
+	else:
+		stamina += stamina_recovery_rate * delta
+		if stamina > max_stamina:
+			stamina = max_stamina
+		
+		# unlock sprint if above threshold
+		if not can_sprint and stamina / max_stamina >= stamina_lock_threshold:
+			can_sprint = true
 
-	# Move player
-	move_and_slide()
+
+func update_danger(delta, is_moving: bool, sprinting: bool):
+	if is_moving:
+		var multiplier := sprint_danger_multiplier if sprinting else 1.0
+		danger_level += danger_increase_rate * multiplier * delta
+	else:
+		danger_level -= danger_decrease_rate * delta
+
+	danger_level = clamp(danger_level, 0.0, max_danger)
+
+
+func update_debug_ui():
+	danger_label.text = "Danger: %.2f" % danger_level
+	danger_label.modulate = Color(
+		1.0,
+		1.0 - danger_level / max_danger,
+		1.0 - danger_level / max_danger
+	)
+	stamina_label.text = "Stamina: %d/%d" % [round(stamina), max_stamina]

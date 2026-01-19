@@ -1,0 +1,77 @@
+[gd_scene load_steps=10 format=3 uid="uid://dl2bibffowpb4"]
+
+[ext_resource type="PackedScene" uid="uid://dn25a6avlx0kf" path="res://scenes/Player.tscn" id="1_gojnm"]
+[ext_resource type="PackedScene" uid="uid://th2etnrw2wps" path="res://scenes/Enemy.tscn" id="2_1c2mv"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_paw1w"]
+emission_shape = 3
+emission_box_extents = Vector3(25, 0, 25)
+direction = Vector3(1, -1, 0)
+spread = 0.2
+color = Color(0.97416157, 0.9793398, 0.97840005, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_paw1w"]
+emission_enabled = true
+emission = Color(0.04247752, 0.6034579, 0.6019688, 1)
+billboard_mode = 3
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="BoxMesh" id="BoxMesh_j6w7d"]
+material = SubResource("StandardMaterial3D_paw1w")
+size = Vector3(0.005, 0.4, 0)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hsoxx"]
+albedo_color = Color(1.3461569e-07, 0.093095414, 6.016344e-09, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_gojnm"]
+material = SubResource("StandardMaterial3D_hsoxx")
+size = Vector2(50, 50)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hsoxx"]
+size = Vector3(50, 0.1, 50)
+
+[sub_resource type="Environment" id="Environment_hsoxx"]
+background_color = Color(0, 0.03368961, 0.122122996, 1)
+ambient_light_color = Color(0.8776157, 0.8776158, 0.8776157, 1)
+fog_light_color = Color(0.1483027, 0.2418809, 0.28377596, 1)
+volumetric_fog_enabled = true
+volumetric_fog_albedo = Color(0.7162962, 0.71629626, 0.7162961, 1)
+volumetric_fog_emission = Color(0.14406255, 0.14406255, 0.14406255, 1)
+
+[node name="TestLevel" type="Node3D"]
+
+[node name="RainEmitter" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 20, 0)
+
+[node name="GPUParticles3D" type="GPUParticles3D" parent="RainEmitter"]
+amount = 2000
+lifetime = 4.0
+preprocess = 2.0
+speed_scale = 3.49
+process_material = SubResource("ParticleProcessMaterial_paw1w")
+draw_pass_1 = SubResource("BoxMesh_j6w7d")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_gojnm")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="MeshInstance3D"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D/StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.28082275, 0)
+shape = SubResource("BoxShape3D_hsoxx")
+
+[node name="MoonLight" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.8660254, -0.3535534, 0.3535534, 0, 0.7071068, 0.7071068, -0.5, -0.61237246, 0.61237246, -0.2537079, 1.2563438, -0.6434746)
+light_color = Color(0.042425245, 0.20971602, 0.36808726, 1)
+shadow_enabled = true
+shadow_bias = 1.076
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_hsoxx")
+
+[node name="Player" parent="." instance=ExtResource("1_gojnm")]
+
+[node name="Enemy" parent="." instance=ExtResource("2_1c2mv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.878, 2, 6)
