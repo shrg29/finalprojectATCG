@@ -1,0 +1,46 @@
+[gd_scene load_steps=7 format=3 uid="uid://dl2bibffowpb4"]
+
+[ext_resource type="PackedScene" uid="uid://dn25a6avlx0kf" path="res://Player.tscn" id="1_gojnm"]
+[ext_resource type="PackedScene" uid="uid://th2etnrw2wps" path="res://Enemy.tscn" id="2_1c2mv"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hsoxx"]
+albedo_color = Color(1.3461569e-07, 0.093095414, 6.016344e-09, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_gojnm"]
+material = SubResource("StandardMaterial3D_hsoxx")
+size = Vector2(50, 50)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hsoxx"]
+size = Vector3(50, 0.1, 50)
+
+[sub_resource type="Environment" id="Environment_hsoxx"]
+background_color = Color(0, 0.03368961, 0.122122996, 1)
+fog_light_color = Color(0.1483027, 0.2418809, 0.28377596, 1)
+volumetric_fog_enabled = true
+volumetric_fog_albedo = Color(0.7162962, 0.71629626, 0.7162961, 1)
+
+[node name="TestLevel" type="Node3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_gojnm")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="MeshInstance3D"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D/StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.28082275, 0)
+shape = SubResource("BoxShape3D_hsoxx")
+
+[node name="MoonLight" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.8660254, -0.3535534, 0.3535534, 0, 0.7071068, 0.7071068, -0.5, -0.61237246, 0.61237246, -0.2537079, 1.2563438, -0.6434746)
+light_color = Color(0.042425245, 0.20971602, 0.36808726, 1)
+shadow_enabled = true
+shadow_bias = 1.076
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_hsoxx")
+
+[node name="Player" parent="." instance=ExtResource("1_gojnm")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+
+[node name="Enemy" parent="." instance=ExtResource("2_1c2mv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.878, 2, 6)
