@@ -1,6 +1,7 @@
-[gd_scene load_steps=3 format=3 uid="uid://dn25a6avlx0kf"]
+[gd_scene load_steps=4 format=3 uid="uid://dn25a6avlx0kf"]
 
 [ext_resource type="Script" uid="uid://cw8f7idygr68f" path="res://scripts/player.gd" id="1_xhfnw"]
+[ext_resource type="AudioStream" uid="uid://cpor1a4m1kn83" path="res://assets/walking.mp3" id="2_v6fml"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_0rwas"]
 radius = 0.3
@@ -8,12 +9,12 @@ height = 1.6
 
 [node name="Player" type="CharacterBody3D"]
 script = ExtResource("1_xhfnw")
+movement_music = ExtResource("2_v6fml")
 
 [node name="CameraPivot" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
 
 [node name="Camera3D" type="Camera3D" parent="CameraPivot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5999454, 0)
 current = true
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
@@ -39,3 +40,11 @@ offset_right = 189.0
 offset_bottom = 101.0
 theme_override_font_sizes/font_size = 21
 text = "Stamina: 20/20"
+
+[node name="AwarenessLabel" type="Label" parent="CanvasLayer"]
+offset_left = 38.0
+offset_top = 118.0
+offset_right = 189.0
+offset_bottom = 148.0
+theme_override_font_sizes/font_size = 21
+text = "--------"

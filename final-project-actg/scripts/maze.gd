@@ -202,3 +202,14 @@ func regenerate_maze():
 	init_grid()
 	generate_maze()
 	build_maze()
+
+#cell centers perfect for anchors 
+func get_random_cell_world_position(y_height: float = 1.0) -> Vector3:
+	var x := randi() % maze_width
+	var y := randi() % maze_height
+
+	var pos_x := x * cell_size + offset_x
+	var pos_z := y * cell_size + offset_z
+
+	# local -> world (important if Maze node is moved)
+	return to_global(Vector3(pos_x, y_height, pos_z))

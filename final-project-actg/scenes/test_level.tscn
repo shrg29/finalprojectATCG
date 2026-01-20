@@ -1,9 +1,10 @@
-[gd_scene load_steps=12 format=3 uid="uid://dl2bibffowpb4"]
+[gd_scene load_steps=15 format=3 uid="uid://dl2bibffowpb4"]
 
 [ext_resource type="PackedScene" uid="uid://dn25a6avlx0kf" path="res://scenes/Player.tscn" id="1_gojnm"]
 [ext_resource type="PackedScene" uid="uid://th2etnrw2wps" path="res://scenes/Enemy.tscn" id="2_1c2mv"]
 [ext_resource type="Script" uid="uid://bh12h6cbvlrlx" path="res://scripts/rain_emitter.gd" id="2_j6w7d"]
 [ext_resource type="PackedScene" uid="uid://glfehe5e32b6" path="res://scenes/maze.tscn" id="4_x4b8f"]
+[ext_resource type="AudioStream" uid="uid://c7cudpo3htgp8" path="res://assets/rain.mp3" id="5_tmr53"]
 
 [sub_resource type="Environment" id="Environment_hsoxx"]
 background_color = Color(0, 0.03368961, 0.122122996, 1)
@@ -32,6 +33,15 @@ particles_anim_loop = false
 material = SubResource("StandardMaterial3D_paw1w")
 size = Vector3(0.005, 0.4, 0)
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tmr53"]
+emission_enabled = true
+emission = Color(0.2784314, 0.2627451, 0.33333334, 1)
+billboard_mode = 1
+
+[sub_resource type="BoxMesh" id="BoxMesh_qcd3b"]
+material = SubResource("StandardMaterial3D_tmr53")
+size = Vector3(0.007, 0.4, 0)
+
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hsoxx"]
 albedo_color = Color(1.3461569e-07, 0.093095414, 6.016344e-09, 1)
 
@@ -45,6 +55,8 @@ size = Vector3(102.7357, 0.1, 100.14758)
 [node name="TestLevel" type="Node3D"]
 
 [node name="Maze" parent="." instance=ExtResource("4_x4b8f")]
+maze_width = 5
+maze_height = 5
 
 [node name="MoonLight" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.8660254, -0.3535534, 0.3535534, 0, 0.7071068, 0.7071068, -0.5, -0.61237246, 0.61237246, -0.2537079, 1.2563438, -0.6434746)
@@ -63,7 +75,8 @@ script = ExtResource("2_j6w7d")
 player_path = NodePath("..")
 
 [node name="GPUParticles3D" type="GPUParticles3D" parent="Player/RainEmitter"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -7.9438915, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -7.959, 0)
+visible = false
 amount = 3500
 lifetime = 3.0
 preprocess = 2.0
@@ -73,8 +86,21 @@ randomness = 0.12
 process_material = SubResource("ParticleProcessMaterial_paw1w")
 draw_pass_1 = SubResource("BoxMesh_j6w7d")
 
-[node name="Enemy" parent="." instance=ExtResource("2_1c2mv")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.22220564, 1.2701111, 2.286239)
+[node name="CPUParticles3D" type="CPUParticles3D" parent="Player/RainEmitter"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12, 0)
+amount = 900
+lifetime = 0.9
+preprocess = 1.0
+speed_scale = 3.4
+randomness = 0.2
+mesh = SubResource("BoxMesh_qcd3b")
+emission_shape = 3
+emission_box_extents = Vector3(9, 0.5, 9)
+direction = Vector3(0, -1, 0)
+spread = 6.86
+gravity = Vector3(0, -35, 0)
+initial_velocity_min = 15.0
+initial_velocity_max = 942.42
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 mesh = SubResource("PlaneMesh_x4b8f")
@@ -85,3 +111,10 @@ skeleton = NodePath("../..")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D/StaticBody3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.93675995, 0.28082275, -0.0029907227)
 shape = SubResource("BoxShape3D_tmr53")
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("5_tmr53")
+autoplay = true
+
+[node name="Enemy" parent="." instance=ExtResource("2_1c2mv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2748547, 2.871479)
