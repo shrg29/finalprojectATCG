@@ -1,18 +1,19 @@
 extends Node3D
 
-# ---------- Maze Settings ----------
+#default maze look 
 @export var maze_width := 25
 @export var maze_height := 25
-@export var cell_size := 2.0   # size of one corridor
+#corridor size 
+@export var cell_size := 2.0 
+#root
+@export var wall_scene: PackedScene
 
-@export var wall_scene: PackedScene  # drag your wall scene (StaticBody3D root)
-
-# ---------- Grid Data ----------
-var grid := []  # 2D array of cells
+#data for grid
+var grid := [] #array of cells 
 var entrance_cell: Dictionary
 var exit_cell: Dictionary
 
-# --- Maze Offset to center on floor ---
+#offset needed to center maze on the floor 
 var offset_x := 0.0
 var offset_z := 0.0
 
@@ -22,7 +23,7 @@ func _ready():
 		print("Error: wall_scene not assigned!")
 		return
 	
-	# --- Compute offsets to center maze on floor ---
+	#computing offsets to center maze on floor
 	offset_x = -maze_width * cell_size / 2
 	offset_z = -maze_height * cell_size / 2
 	
@@ -30,17 +31,13 @@ func _ready():
 	generate_maze()
 	build_maze()
 	
-	# Entrance / Exit
+	#entrance and exit
 	entrance_cell = grid[0][0]
 	exit_cell = grid[maze_height-1][maze_width-1]
 	print("Entrance:", entrance_cell)
 	print("Exit:", exit_cell)
 
-
-
-# ---------------------
-# Initialize the grid
-# ---------------------
+#initializing the grid
 func init_grid():
 	grid.clear()
 	for y in maze_height:
@@ -55,10 +52,7 @@ func init_grid():
 			row.append(cell)
 		grid.append(row)
 
-
-# ---------------------
-# Maze Generation (Iterative DFS)
-# ---------------------
+#maze generation with iterative DFS
 func generate_maze():
 	var stack := []
 	var start_cell: Dictionary = grid[0][0]
@@ -77,30 +71,24 @@ func generate_maze():
 		else:
 			stack.pop_back()
 
-
-# ---------------------
-# Get unvisited neighbors safely
-# ---------------------
+#getting unvisited neighbors safely
 func get_unvisited_neighbors(cell) -> Array:
 	var result := []
 	var x = cell["x"]
 	var y = cell["y"]
 
 	if y > 0 and not grid[y-1][x]["visited"]:
-		result.append(grid[y-1][x])  # top
+		result.append(grid[y-1][x])  #top
 	if y < maze_height-1 and not grid[y+1][x]["visited"]:
-		result.append(grid[y+1][x])  # bottom
+		result.append(grid[y+1][x])  #bottom
 	if x > 0 and not grid[y][x-1]["visited"]:
-		result.append(grid[y][x-1])  # left
+		result.append(grid[y][x-1])  #left
 	if x < maze_width-1 and not grid[y][x+1]["visited"]:
-		result.append(grid[y][x+1])  # right
+		result.append(grid[y][x+1])  #right
 
 	return result
 
-
-# ---------------------
-# Remove walls between adjacent cells
-# ---------------------
+#removing walls between adjacent cells
 func remove_wall_between(cell_a, cell_b):
 	var dx = cell_b["x"] - cell_a["x"]
 	var dy = cell_b["y"] - cell_a["y"]
@@ -118,12 +106,9 @@ func remove_wall_between(cell_a, cell_b):
 		cell_a["walls"]["top"] = false
 		cell_b["walls"]["bottom"] = false
 
-
-# ---------------------
-# Build maze in 3D
-# ---------------------
+#actually building maze in 3D
 func build_maze():
-	# Clear old walls
+	#clear old walls
 	for child in get_children():
 		child.queue_free()
 
@@ -133,23 +118,20 @@ func build_maze():
 			var pos_x = x * cell_size + offset_x
 			var pos_z = y * cell_size + offset_z
 
-			# Top wall
+			#top wall
 			if cell["walls"]["top"]:
 				spawn_wall(pos_x, 0, pos_z - cell_size/2, Vector3(cell_size, 2.0, 0.2))
-			# Bottom wall
+			#bottom wall
 			if cell["walls"]["bottom"]:
 				spawn_wall(pos_x, 0, pos_z + cell_size/2, Vector3(cell_size, 2.0, 0.2))
-			# Left wall
+			#left wall
 			if cell["walls"]["left"]:
 				spawn_wall(pos_x - cell_size/2, 0, pos_z, Vector3(0.2, 2.0, cell_size))
-			# Right wall
+			#right wall
 			if cell["walls"]["right"]:
 				spawn_wall(pos_x + cell_size/2, 0, pos_z, Vector3(0.2, 2.0, cell_size))
 
-
-# ---------------------
-# Spawn individual wall
-# ---------------------
+#spawn individual wall
 func spawn_wall(x: float, y: float, z: float, size: Vector3):
 	if wall_scene == null:
 		return
@@ -158,10 +140,7 @@ func spawn_wall(x: float, y: float, z: float, size: Vector3):
 	wall.scale = size
 	add_child(wall)
 
-
-# ---------------------
-# Regenerate maze
-# ---------------------
+#regenerate maze 
 func regenerate_maze():
 	init_grid()
 	generate_maze()

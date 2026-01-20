@@ -85,4 +85,4 @@ process_material = SubResource("ParticleProcessMaterial_paw1w")
 draw_pass_1 = SubResource("BoxMesh_j6w7d")
 
 [node name="Enemy" parent="." instance=ExtResource("2_1c2mv")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.7445216, 9.692578)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.08363223, 1.5936582, 3.5118713)
