@@ -13,6 +13,7 @@ script = ExtResource("1_xhfnw")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
 
 [node name="Camera3D" type="Camera3D" parent="CameraPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5999454, 0)
 current = true
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]

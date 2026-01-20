@@ -5,16 +5,6 @@
 [ext_resource type="Script" uid="uid://bh12h6cbvlrlx" path="res://scripts/rain_emitter.gd" id="2_j6w7d"]
 [ext_resource type="PackedScene" uid="uid://glfehe5e32b6" path="res://scenes/maze.tscn" id="4_x4b8f"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hsoxx"]
-albedo_color = Color(1.3461569e-07, 0.093095414, 6.016344e-09, 1)
-
-[sub_resource type="PlaneMesh" id="PlaneMesh_gojnm"]
-material = SubResource("StandardMaterial3D_hsoxx")
-size = Vector2(100, 100)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_hsoxx"]
-size = Vector3(102.7357, 0.1, 100.14758)
-
 [sub_resource type="Environment" id="Environment_hsoxx"]
 background_color = Color(0, 0.03368961, 0.122122996, 1)
 ambient_light_color = Color(0.8776157, 0.8776158, 0.8776157, 1)
@@ -42,20 +32,19 @@ particles_anim_loop = false
 material = SubResource("StandardMaterial3D_paw1w")
 size = Vector3(0.005, 0.4, 0)
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hsoxx"]
+albedo_color = Color(1.3461569e-07, 0.093095414, 6.016344e-09, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_x4b8f"]
+material = SubResource("StandardMaterial3D_hsoxx")
+size = Vector2(100, 100)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_tmr53"]
+size = Vector3(102.7357, 0.1, 100.14758)
+
 [node name="TestLevel" type="Node3D"]
 
 [node name="Maze" parent="." instance=ExtResource("4_x4b8f")]
-maze_width = 100
-maze_height = 100
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-mesh = SubResource("PlaneMesh_gojnm")
-
-[node name="StaticBody3D" type="StaticBody3D" parent="MeshInstance3D"]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D/StaticBody3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.93675995, 0.28082275, -0.0029907227)
-shape = SubResource("BoxShape3D_hsoxx")
 
 [node name="MoonLight" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.8660254, -0.3535534, 0.3535534, 0, 0.7071068, 0.7071068, -0.5, -0.61237246, 0.61237246, -0.2537079, 1.2563438, -0.6434746)
@@ -85,4 +74,14 @@ process_material = SubResource("ParticleProcessMaterial_paw1w")
 draw_pass_1 = SubResource("BoxMesh_j6w7d")
 
 [node name="Enemy" parent="." instance=ExtResource("2_1c2mv")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.08363223, 1.5936582, 3.5118713)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.22220564, 1.2701111, 2.286239)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_x4b8f")
+skeleton = NodePath("../..")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="MeshInstance3D"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D/StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.93675995, 0.28082275, -0.0029907227)
+shape = SubResource("BoxShape3D_tmr53")

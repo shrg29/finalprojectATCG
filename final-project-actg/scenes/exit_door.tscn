@@ -1,0 +1,34 @@
+[gd_scene load_steps=6 format=3 uid="uid://dky6767lmir2e"]
+
+[ext_resource type="Script" uid="uid://ytpsj56vfem0" path="res://scripts/exit_door.gd" id="1_syxuu"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_sojrm"]
+size = Vector3(18.625303, 2.6516113, 8.604614)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_yk4m6"]
+albedo_color = Color(0.31490856, 0.16457716, 0.057238065, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_lxrmt"]
+material = SubResource("StandardMaterial3D_yk4m6")
+size = Vector3(2, 2.5, 0.3)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_6m21m"]
+size = Vector3(1.987793, 2.5089111, 0.3)
+
+[node name="ExitDoor" type="RigidBody3D"]
+can_sleep = false
+script = ExtResource("1_syxuu")
+
+[node name="Area3D" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1051447, 0.17419434, 4.1706066)
+shape = SubResource("BoxShape3D_sojrm")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_lxrmt")
+skeleton = NodePath("")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0012207031, -0.002319336, 0)
+shape = SubResource("BoxShape3D_6m21m")

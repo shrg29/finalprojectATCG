@@ -1,8 +1,12 @@
-[gd_scene load_steps=3 format=3 uid="uid://glfehe5e32b6"]
+[gd_scene load_steps=4 format=3 uid="uid://glfehe5e32b6"]
 
 [ext_resource type="Script" uid="uid://orp71hr6rcd0" path="res://scripts/maze.gd" id="1_fgl6e"]
 [ext_resource type="PackedScene" uid="uid://bmfytqsy4s558" path="res://scenes/wall_scene.tscn" id="2_l3biw"]
+[ext_resource type="PackedScene" uid="uid://dky6767lmir2e" path="res://scenes/exit_door.tscn" id="3_l3biw"]
 
 [node name="Maze" type="Node3D"]
 script = ExtResource("1_fgl6e")
+maze_width = 25
+maze_height = 25
 wall_scene = ExtResource("2_l3biw")
+exit_door_scene = ExtResource("3_l3biw")

@@ -5,6 +5,8 @@ extends CharacterBody3D
 @export var sprint_speed := 7.0
 @export var mouse_sensitivity = 0.2
 @export var gravity : float = -9.8
+@export var jump_velocity := 4.5
+
 
 #stamina system vars
 #max stamina you can have
@@ -33,10 +35,15 @@ var can_sprint := true
 @onready var danger_label := $CanvasLayer/DangerLabel
 @onready var camera_pivot = $CameraPivot
 
+#door vars
+#how far ahead to check for a door
+@export var push_distance := 1.5
+#how hard the player pushes      
+@export var push_force := 5.0        
+
 var danger_level := 0.0
 var rotation_y = 0.0
 var rotation_x = 0.0
-
 
 func _ready():
 	pass
@@ -53,11 +60,34 @@ func _physics_process(delta):
 
 	apply_movement(move_dir, is_sprinting)
 	apply_gravity(delta)
+	handle_jump()
 	update_stamina(delta, is_sprinting)
 	update_danger(delta, move_dir != Vector3.ZERO, is_sprinting)
 	update_debug_ui()
 
 	move_and_slide()
+	push_door_ahead()
+
+#pushing the door 
+func push_door_ahead():
+	var from: Vector3 = camera_pivot.global_position
+	var forward: Vector3 = -camera_pivot.global_transform.basis.z
+	var to: Vector3 = from + forward * push_distance
+
+	var params := PhysicsRayQueryParameters3D.create(from, to)
+	params.exclude = [self]
+	params.collide_with_areas = false
+	params.collide_with_bodies = true
+
+	var result := get_world_3d().direct_space_state.intersect_ray(params)
+	if result.is_empty():
+		return
+
+	var collider = result["collider"]
+	if collider is RigidBody3D:
+		#push in the direction we are looking
+		collider.apply_central_impulse(forward * push_force)
+
 
 #look around with mouse
 func handle_mouse_look(event):
@@ -125,6 +155,11 @@ func update_danger(delta, is_moving: bool, sprinting: bool):
 		danger_level -= danger_decrease_rate * delta
 
 	danger_level = clamp(danger_level, 0.0, max_danger)
+
+func handle_jump():
+	if Input.is_action_just_pressed("jump") and is_on_floor():
+		velocity.y = jump_velocity
+
 
 #helper UI
 #dev only 
