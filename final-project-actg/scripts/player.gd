@@ -31,7 +31,8 @@ var rotation_x = 0.0
 
 
 func _ready():
-	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	pass
+	#Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
 func _input(event):
 	handle_mouse_look(event)

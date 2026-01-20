@@ -1,6 +1,6 @@
 [gd_scene load_steps=12 format=3 uid="uid://dl2bibffowpb4"]
 
-[ext_resource type="PackedScene" uid="uid://dn25a6avlx0kf" path="res://scenes/player.tscn" id="1_gojnm"]
+[ext_resource type="PackedScene" uid="uid://dn25a6avlx0kf" path="res://scenes/Player.tscn" id="1_gojnm"]
 [ext_resource type="PackedScene" uid="uid://th2etnrw2wps" path="res://scenes/Enemy.tscn" id="2_1c2mv"]
 [ext_resource type="Script" uid="uid://bh12h6cbvlrlx" path="res://scripts/rain_emitter.gd" id="2_j6w7d"]
 [ext_resource type="PackedScene" uid="uid://glfehe5e32b6" path="res://scenes/maze.tscn" id="4_x4b8f"]
@@ -59,7 +59,7 @@ shape = SubResource("BoxShape3D_hsoxx")
 
 [node name="MoonLight" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.8660254, -0.3535534, 0.3535534, 0, 0.7071068, 0.7071068, -0.5, -0.61237246, 0.61237246, -0.2537079, 1.2563438, -0.6434746)
-light_color = Color(0.042425245, 0.20971602, 0.36808726, 1)
+light_color = Color(0.5943116, 0.61841196, 0.7604829, 1)
 shadow_enabled = true
 shadow_bias = 1.076
 
