@@ -1,10 +1,14 @@
-[gd_scene load_steps=15 format=3 uid="uid://dl2bibffowpb4"]
+[gd_scene load_steps=19 format=3 uid="uid://dl2bibffowpb4"]
 
 [ext_resource type="PackedScene" uid="uid://dn25a6avlx0kf" path="res://scenes/Player.tscn" id="1_gojnm"]
 [ext_resource type="PackedScene" uid="uid://th2etnrw2wps" path="res://scenes/Enemy.tscn" id="2_1c2mv"]
 [ext_resource type="Script" uid="uid://bh12h6cbvlrlx" path="res://scripts/rain_emitter.gd" id="2_j6w7d"]
 [ext_resource type="PackedScene" uid="uid://glfehe5e32b6" path="res://scenes/maze.tscn" id="4_x4b8f"]
+[ext_resource type="Script" uid="uid://bawc8nhh1pd4r" path="res://scripts/enemy_director.gd" id="5_qcd3b"]
 [ext_resource type="AudioStream" uid="uid://c7cudpo3htgp8" path="res://assets/rain.mp3" id="5_tmr53"]
+[ext_resource type="AudioStream" uid="uid://hhxhe8lea3k5" path="res://assets/first_cue.mp3" id="7_7gix3"]
+[ext_resource type="AudioStream" uid="uid://cjbqcljmmkkjg" path="res://assets/breathing.mp3" id="8_4asn1"]
+[ext_resource type="AudioStream" uid="uid://ds212260u8qbt" path="res://assets/very_high_danger.mp3" id="9_dw7u0"]
 
 [sub_resource type="Environment" id="Environment_hsoxx"]
 background_color = Color(0, 0.03368961, 0.122122996, 1)
@@ -55,8 +59,6 @@ size = Vector3(102.7357, 0.1, 100.14758)
 [node name="TestLevel" type="Node3D"]
 
 [node name="Maze" parent="." instance=ExtResource("4_x4b8f")]
-maze_width = 5
-maze_height = 5
 
 [node name="MoonLight" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.8660254, -0.3535534, 0.3535534, 0, 0.7071068, 0.7071068, -0.5, -0.61237246, 0.61237246, -0.2537079, 1.2563438, -0.6434746)
@@ -116,5 +118,11 @@ shape = SubResource("BoxShape3D_tmr53")
 stream = ExtResource("5_tmr53")
 autoplay = true
 
-[node name="Enemy" parent="." instance=ExtResource("2_1c2mv")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2748547, 2.871479)
+[node name="EnemyDirector" type="Node3D" parent="."]
+script = ExtResource("5_qcd3b")
+maze_path = NodePath("../Maze")
+player_path = NodePath("../Player")
+manifested_enemy_scene = ExtResource("2_1c2mv")
+cue_far = ExtResource("7_7gix3")
+cue_breath = ExtResource("8_4asn1")
+cue_tense = ExtResource("9_dw7u0")

@@ -1,5 +1,11 @@
 extends CharacterBody3D
 
+signal sprinting_changed(is_sprinting: bool)
+signal punish_requested()
+
+var _is_sprinting_now := false
+
+
 #basic player vars
 @export var speed = 2.0
 @export var sprint_speed := 7.0
@@ -47,6 +53,8 @@ var look_timer := 0.0
 @onready var camera_pivot = $CameraPivot
 @onready var camera: Camera3D = $CameraPivot/Camera3D
 @onready var awareness_label := $CanvasLayer/AwarenessLabel
+@onready var director_label := $CanvasLayer/DirectorLabel
+
 
 #door vars
 #how far ahead to check for a door
@@ -71,6 +79,11 @@ func _physics_process(delta):
 	var is_trying_to_sprint := Input.is_action_pressed("sprint") and move_dir != Vector3.ZERO
 	var is_sprinting := is_trying_to_sprint and can_sprint
 	var is_moving := move_dir != Vector3.ZERO
+	
+	if is_sprinting != _is_sprinting_now:
+		_is_sprinting_now = is_sprinting
+		emit_signal("sprinting_changed", _is_sprinting_now)
+
 	
 	AudioManager.set_movement_active(is_moving)
 	AudioManager.set_sprinting(is_sprinting)
@@ -232,11 +245,11 @@ func update_awareness(delta):
 		look_timer += delta
 		if awareness_debug:
 			print("Looking at enemy: ", "%.2f" % look_timer)
-
 		if look_timer >= look_time_to_trigger:
-			# Later: tell enemy to punish
 			if awareness_debug:
 				print(">>> PUNISH SHOULD TRIGGER NOW <<<")
+			emit_signal("punish_requested")
+			look_timer = 0.0 # prevents spamming
 	else:
 		look_timer = 0.0
 
@@ -265,3 +278,41 @@ func is_enemy_visible(enemy: Node3D) -> bool:
 		return false
 
 	return hit["collider"] == enemy
+	
+
+func can_see_point(world_point: Vector3, dot_threshold: float = -1.0) -> bool:
+	var threshold := view_dot_threshold if dot_threshold < 0.0 else dot_threshold
+
+	# --- A) view cone ---
+	var forward: Vector3 = -camera.global_transform.basis.z
+	forward = forward.normalized()
+
+	var to_point: Vector3 = (world_point - camera.global_position).normalized()
+	var dot := forward.dot(to_point)
+	if dot < threshold:
+		return false
+
+	# --- B) line-of-sight raycast ---
+	var from: Vector3 = camera.global_position
+	var to: Vector3 = world_point
+
+	var params := PhysicsRayQueryParameters3D.create(from, to)
+	params.exclude = [self]
+	params.collide_with_areas = false
+	params.collide_with_bodies = true
+
+	var hit := get_world_3d().direct_space_state.intersect_ray(params)
+
+	# If nothing blocks, we can see the point
+	if hit.is_empty():
+		return true
+
+	# If something is hit, it's blocking the point.
+	# (We don't have a collider at the point, so any hit means blocked.)
+	return false
+	
+func set_director_debug_text(t: String, c: Color = Color(1,1,1)) -> void:
+	if director_label == null:
+		return
+	director_label.text = t
+	director_label.modulate = c

@@ -48,3 +48,10 @@ offset_right = 189.0
 offset_bottom = 148.0
 theme_override_font_sizes/font_size = 21
 text = "--------"
+
+[node name="DirectorLabel" type="Label" parent="CanvasLayer"]
+offset_left = 38.0
+offset_top = 166.0
+offset_right = 189.0
+offset_bottom = 196.0
+theme_override_font_sizes/font_size = 21
