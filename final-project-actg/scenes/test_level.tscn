@@ -13,6 +13,8 @@
 [sub_resource type="Environment" id="Environment_hsoxx"]
 background_color = Color(0, 0.03368961, 0.122122996, 1)
 ambient_light_color = Color(0.8776157, 0.8776158, 0.8776157, 1)
+tonemap_mode = 2
+tonemap_white = 4.2
 fog_light_color = Color(0.1483027, 0.2418809, 0.28377596, 1)
 volumetric_fog_enabled = true
 volumetric_fog_albedo = Color(0.7162962, 0.71629626, 0.7162961, 1)
