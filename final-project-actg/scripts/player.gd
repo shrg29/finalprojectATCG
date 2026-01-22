@@ -17,26 +17,26 @@ var _is_sprinting_now := false
 
 #stamina system vars
 #max stamina you can have
-@export var max_stamina := 20.0     
+@export var max_stamina := 14.0     
 #drains per second while sprinting    
-@export var stamina_drain_rate := 5.0   
+@export var stamina_drain_rate := 4.2   
 #recharges per second when not sprinting
-@export var stamina_recovery_rate := 4.0
+@export var stamina_recovery_rate := 3.0
 #35% out of max stamina - unlocks sprint 
-@export var stamina_lock_threshold := 0.35 
+@export var stamina_lock_threshold := 0.40 
 
 var stamina := max_stamina
 var can_sprint := true
 
 #danger level system
 #increases while walking
-@export var danger_increase_rate := 0.15
+@export var danger_increase_rate := 0.22
 #decreases while walking/standing still
-@export var danger_decrease_rate := 0.25
+@export var danger_decrease_rate := 0.14
 #upper limit danger
-@export var max_danger := 20.0
+@export var max_danger := 10.0
 #sprint multiplies danger level 
-@export var sprint_danger_multiplier := 5.0
+@export var sprint_danger_multiplier := 3.5
 
 # ---------- Awareness / Perception ----------
 @export var view_dot_threshold := 0.85

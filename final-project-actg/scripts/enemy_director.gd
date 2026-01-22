@@ -21,31 +21,31 @@ enum State { COOLDOWN, ANCHORED, MANIFESTED, PUNISH }
 @export var anchor_y := 1.0
 
 @export var anchor_zone_scene: PackedScene
-@export var anchor_zone_radius := 6.0 # meters
+@export var anchor_zone_radius := 9.0 # meters
 var _zone: Area3D = null
 var _player_in_zone := false
 
 # --- danger-driven behaviour tuning (director only) ---
-@export var danger_zone_radius_bonus := 0.6 # up to +60% radius at max danger
-@export var manifest_view_dot_min := 0.68   # more danger => wider cone (lower dot)
+@export var danger_zone_radius_bonus := 0.8 # up to +60% radius at max danger
+@export var manifest_view_dot_min := 0.65   # more danger => wider cone (lower dot)
 # -----------------------------------------------
 
 #timing/pacing
-@export var base_anchor_interval := 20.0       #seconds between anchor picks when calm
-@export var sprint_interval_multiplier := 0.45  #sprinting => shorter interval (more frequent picks)
-@export var danger_interval_factor := 0.35      #danger pushes interval down (0..1 factor weight)
+@export var base_anchor_interval := 16.0       #seconds between anchor picks when calm
+@export var sprint_interval_multiplier := 0.55  #sprinting => shorter interval (more frequent picks)
+@export var danger_interval_factor := 0.55      #danger pushes interval down (0..1 factor weight)
 
-@export var base_cooldown := 6.0                #after clearing anchor/demanifest
-@export var sprint_cooldown_multiplier := 0.6   #sprinting slows "recovery" (smaller = longer effective cooldown)
-@export var danger_cooldown_factor := 0.5
+@export var base_cooldown := 5.0               #after clearing anchor/demanifest
+@export var sprint_cooldown_multiplier := 0.75   #sprinting slows "recovery" (smaller = longer effective cooldown)
+@export var danger_cooldown_factor := 0.55
 
 #distances (in meters)
-@export var far_dist := 22.0
-@export var mid_dist := 12.0
-@export var near_dist := 7.0
-@export var min_pick_distance := 14.0      #anchors must be at least this far when chosen
-@export var max_pick_distance := 26.0     # optional cap, set to e.g. 60.0 if you want
-@export var pick_attempts := 25            #tries before fallback
+@export var far_dist := 26.0
+@export var mid_dist := 15.0
+@export var near_dist := 8.0
+@export var min_pick_distance := 18.0      #anchors must be at least this far when chosen
+@export var max_pick_distance := 42.0     # optional cap, set to e.g. 60.0 if you want
+@export var pick_attempts := 40            #tries before fallback
 
 #anchor must be this close AND visible to manifest
 @export var manifest_distance := 8.0
@@ -85,10 +85,6 @@ var _aggression := 0.0 # 0..1
 
 @export var tier_hysteresis := 1.0
 var _current_tier := -1
-
-#linger: enemy waits for player reaction before leaving
-@export var linger_time_near := 20.0 # seconds it can stay even if you look away
-var _linger_timer := 0.0
 
 
 #manifest stability (prevents instant dip from LOS quirks)
@@ -228,37 +224,57 @@ func _pick_new_anchor() -> void:
 		return
 
 	var player_pos: Vector3 = _player.global_position
-	var best_idx := -1
-	var best_d := -1.0
 
+	# --- danger-driven distance targeting ---
+	var danger01: float = _get_player_danger01()
+
+	# sprint pushes it a bit more aggressive (closer)
+	var aggr01: float = clamp(danger01 + (0.25 if _is_sprinting else 0.0), 0.0, 1.0)
+
+	# At low danger: target is far-ish
+	# At high danger: target shifts toward near/mid
+	var desired_min: float = float(lerp(min_pick_distance, near_dist + 1.0, aggr01))
+	var desired_max: float = float(lerp(max_pick_distance, mid_dist + 2.0, aggr01))
+
+	# safety: make sure band is valid
+	if desired_max < desired_min + 0.5:
+		desired_max = desired_min + 0.5
+
+	# pick around the center of the band
+	var target_d: float = (desired_min + desired_max) * 0.5
+	# --------------------------------------
+
+	var best_idx := -1
+	var best_score := INF
+
+	# Try random samples first (cheap)
 	for attempt in pick_attempts:
 		var idx := randi() % _anchors.size()
 		if _anchors.size() > 1 and idx == _anchor_index:
 			continue
 
-		var p := _anchors[idx]
-		var d := player_pos.distance_to(p)
+		var p: Vector3 = _anchors[idx]
+		var d: float = player_pos.distance_to(p)
 
-		#reject anchors that are too close (prevents random “VERY CLOSE”)
-		if d < min_pick_distance:
+		# accept only anchors inside the danger-driven band
+		if d < desired_min or d > desired_max:
 			continue
 
-		#reject anchors that are insanely far
-		if d > max_pick_distance:
-			continue
+		# score: closest to target distance wins
+		var score: float = abs(d - target_d)
+		if score < best_score:
+			best_score = score
+			best_idx = idx
 
-		best_idx = idx
-		best_d = d
-		break
-
-	#fallback: if we couldn't find a valid one, pick the farthest we can (still avoids close jumps)
+	# Fallback: if none fit the band, choose the closest-to-target among ALL anchors
 	if best_idx == -1:
 		for i in _anchors.size():
 			if i == _anchor_index:
 				continue
-			var d2 := player_pos.distance_to(_anchors[i])
-			if d2 > best_d:
-				best_d = d2
+			var d2: float = player_pos.distance_to(_anchors[i])
+			var score2: float = abs(d2 - target_d)
+			if score2 < best_score:
+				best_score = score2
 				best_idx = i
 
 	if best_idx == -1:
@@ -272,6 +288,7 @@ func _pick_new_anchor() -> void:
 	_state = State.ANCHORED
 	_lose_sight_timer = 0.0
 	_repick_timer = _get_next_anchor_interval()
+
 
 
 func _spawn_or_move_zone() -> void:
@@ -320,7 +337,7 @@ func _update_zone_radius() -> void:
 
 	# walking -> small detection radius
 	# sprinting -> large detection radius
-	var sprint_mult: float = 1.35 if _is_sprinting else 1.0
+	var sprint_mult: float = 1.25 if _is_sprinting else 1.0
 
 	# more danger => bigger radius (up to +60%)
 	var danger_mult: float = 1.0 + danger_zone_radius_bonus * danger01
@@ -470,7 +487,6 @@ func _manifest_at_anchor() -> void:
 	_state = State.MANIFESTED
 	_lose_sight_timer = 0.0
 	_manifest_timer = 0.0
-	_linger_timer = 0.0
 
 #checking if player sees the enemy 
 func _update_manifested(delta: float) -> void:
@@ -493,19 +509,9 @@ func _update_manifested(delta: float) -> void:
 	# IMPORTANT: in very close range, do NOT rely on LOS.
 	# LOS flickers around corners / near walls and causes instant "dips".
 	# Use facing cone only to decide if player "looked away".
-	if d <= near_dist:
-		_linger_timer += delta
 
 	var danger01: float = _get_player_danger01()
 	var dot_needed: float = float(lerp(manifest_view_dot, manifest_view_dot_min, danger01))
-
-		# While lingering, do NOT demanifest just because the player looks away.
-		# This allows the player to freeze, rotate camera, panic, etc.
-	if _linger_timer < linger_time_near:
-			# Optional: if player IS facing him, reset lose-sight so punish has time to happen
-		if _is_player_facing_anchor(dot_needed):
-			_lose_sight_timer = 0.0
-		return
 
 		# After linger time is over, return to normal "look away -> disappear" behaviour
 	if _is_player_facing_anchor(dot_needed):
