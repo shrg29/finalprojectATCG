@@ -20,8 +20,18 @@ enum State { COOLDOWN, ANCHORED, MANIFESTED, PUNISH }
 @export var anchors_count := 60
 @export var anchor_y := 1.0
 
+@export var anchor_zone_scene: PackedScene
+@export var anchor_zone_radius := 6.0 # meters
+var _zone: Area3D = null
+var _player_in_zone := false
+
+# --- danger-driven behaviour tuning (director only) ---
+@export var danger_zone_radius_bonus := 0.6 # up to +60% radius at max danger
+@export var manifest_view_dot_min := 0.68   # more danger => wider cone (lower dot)
+# -----------------------------------------------
+
 #timing/pacing
-@export var base_anchor_interval := 8.0         #seconds between anchor picks when calm
+@export var base_anchor_interval := 20.0       #seconds between anchor picks when calm
 @export var sprint_interval_multiplier := 0.45  #sprinting => shorter interval (more frequent picks)
 @export var danger_interval_factor := 0.35      #danger pushes interval down (0..1 factor weight)
 
@@ -30,13 +40,19 @@ enum State { COOLDOWN, ANCHORED, MANIFESTED, PUNISH }
 @export var danger_cooldown_factor := 0.5
 
 #distances (in meters)
-@export var far_dist := 18.0
+@export var far_dist := 22.0
 @export var mid_dist := 12.0
 @export var near_dist := 7.0
+@export var min_pick_distance := 14.0      #anchors must be at least this far when chosen
+@export var max_pick_distance := 26.0     # optional cap, set to e.g. 60.0 if you want
+@export var pick_attempts := 25            #tries before fallback
 
 #anchor must be this close AND visible to manifest
-@export var manifest_distance := 10.0
+@export var manifest_distance := 8.0
 @export var manifest_view_dot := 0.85
+
+@export var manifest_los_distance := 10.0  # within this distance we require LOS
+@export var manifest_no_los_distance := 6.0 # within this distance LOS not required (around-corner allowance)
 
 #if player looks away after manifest, we clear anchor after a short grace
 @export var lose_sight_clear_time := 0.35
@@ -45,6 +61,10 @@ var _lose_sight_timer := 0.0
 #punish spawn
 @export var punish_distance_from_camera := 1.2
 @export var punish_duration := 1.2
+
+var _aggression := 0.0 # 0..1
+@export var aggression_up := 0.20   # per second when chasing/noisy
+@export var aggression_down := 0.12 # per second when cautious
 
 #audio
 @export var cue_far: AudioStream
@@ -63,11 +83,22 @@ var _lose_sight_timer := 0.0
 @export var breath_db_mid := -8.0
 @export var breath_db_near := -2.0
 
+@export var tier_hysteresis := 1.0
+var _current_tier := -1
+
+#linger: enemy waits for player reaction before leaving
+@export var linger_time_near := 20.0 # seconds it can stay even if you look away
+var _linger_timer := 0.0
+
+
+#manifest stability (prevents instant dip from LOS quirks)
+@export var min_manifest_time := 0.8 # seconds enemy must exist before it can disappear
+var _manifest_timer := 0.0
+
 var _repick_timer := 0.0
 
 var _debug_markers_root: Node3D
 var _debug_timer := 0.0
-
 
 var _maze: Node3D
 var _player: Node3D
@@ -117,13 +148,23 @@ func _ready():
 	#cooldown is the beginning state 
 	_enter_cooldown("start")
 
+
 func _process(delta: float) -> void:
 	if _maze == null or _player == null:
 		return
+
 	#every frame it updates audio fade and pitch 
 	_update_audio(delta)
 	if debug_enabled and debug_show_anchor_markers:
 		_highlight_active_anchor() #currently chosen anchor is a bit bigger 
+
+	# --- update aggression from player danger ---
+	var danger01 := _get_player_danger01()
+	# more danger => aggression rises, calm => drops
+	var target_aggr := danger01
+	var rate := aggression_up if danger01 > _aggression else aggression_down
+	_aggression = move_toward(_aggression, target_aggr, rate * delta)
+	# ------------------------------------------
 
 	match _state:
 		#enemy waits until cooldown ends so it can anchor itself
@@ -132,29 +173,46 @@ func _process(delta: float) -> void:
 			_timer -= delta
 			if _timer <= 0.0:
 				_pick_new_anchor()
+
 		#computing the distance between player and anchor 
 		#setting audio targets + breathing 
 		State.ANCHORED:
+			# 1) ALWAYS drive audio from the current anchor
 			_update_anchor_pressure(delta)
-			_repick_timer -= delta
-			if _repick_timer <= 0.0:
-		#picks a new anchor
-		#more often when sprinting/high danger level 
-				_pick_new_anchor()
-				return
+
+			# keep detection zone radius synced with danger (so corner spawns feel "pre-existing")
+			_update_zone_radius()
+
+			# 2) Measure distance AFTER audio targets are set
+			var d := _player.global_position.distance_to(_anchor_pos)
+			var tier := _get_tier(d)
+
+			# 3) Only repick if NOT engaged (prevents audio jumping)
+			#    NEW: if player is in mid or near (tier >= 1) OR inside zone, freeze anchor
+			var engaged := (tier >= 1) or _player_in_zone
+			if not engaged:
+				_repick_timer -= delta
+				if _repick_timer <= 0.0:
+					_pick_new_anchor()
+					return
+
+			# 4) Check manifest last
 			if _can_manifest_now():
 				_manifest_at_anchor()
+
 		#if anchor is close enough and visible, spawn real enemy 
 		State.MANIFESTED:
 			_update_manifested(delta)
+
 		#if player looks at the enemy for too long - punish
 		State.PUNISH:
 			_timer -= delta
 			if _timer <= 0.0:
 				_end_punish()
-				
+
 	#updates every half a second 
 	_debug_update(delta)
+
 
 #anchor generation/picking
 func _generate_anchors() -> void:
@@ -163,22 +221,133 @@ func _generate_anchors() -> void:
 		var p := Vector3(_maze.call("get_random_cell_world_position", anchor_y))
 		_anchors.append(p)
 
+
 #having exactly one active anchor 
 func _pick_new_anchor() -> void:
 	if _anchors.is_empty():
 		return
 
-	#pick a different index than last time if possible
-	var new_idx := randi() % _anchors.size()
-	if _anchors.size() > 1 and new_idx == _anchor_index:
-		new_idx = (new_idx + 1) % _anchors.size()
+	var player_pos: Vector3 = _player.global_position
+	var best_idx := -1
+	var best_d := -1.0
 
-	_anchor_index = new_idx
+	for attempt in pick_attempts:
+		var idx := randi() % _anchors.size()
+		if _anchors.size() > 1 and idx == _anchor_index:
+			continue
+
+		var p := _anchors[idx]
+		var d := player_pos.distance_to(p)
+
+		#reject anchors that are too close (prevents random “VERY CLOSE”)
+		if d < min_pick_distance:
+			continue
+
+		#reject anchors that are insanely far
+		if d > max_pick_distance:
+			continue
+
+		best_idx = idx
+		best_d = d
+		break
+
+	#fallback: if we couldn't find a valid one, pick the farthest we can (still avoids close jumps)
+	if best_idx == -1:
+		for i in _anchors.size():
+			if i == _anchor_index:
+				continue
+			var d2 := player_pos.distance_to(_anchors[i])
+			if d2 > best_d:
+				best_d = d2
+				best_idx = i
+
+	if best_idx == -1:
+		return
+
+	_anchor_index = best_idx
 	_anchor_pos = _anchors[_anchor_index]
+
+	_spawn_or_move_zone()
+
 	_state = State.ANCHORED
 	_lose_sight_timer = 0.0
 	_repick_timer = _get_next_anchor_interval()
-	
+
+
+func _spawn_or_move_zone() -> void:
+	# cleanup old
+	if is_instance_valid(_zone):
+		_zone.queue_free()
+	_zone = null
+	_player_in_zone = false
+
+	if anchor_zone_scene == null:
+		push_warning("EnemyDirector: anchor_zone_scene not assigned.")
+		return
+
+	_zone = anchor_zone_scene.instantiate() as Area3D
+	if _zone == null:
+		push_warning("EnemyDirector: AnchorZone scene root must be Area3D.")
+		return
+
+	get_tree().current_scene.add_child(_zone)
+	_zone.global_position = _anchor_pos
+
+	# set radius at runtime (so you can tune in inspector)
+	var cs: CollisionShape3D = _zone.get_node_or_null("CollisionShape3D") as CollisionShape3D
+	if cs and cs.shape is SphereShape3D:
+		(cs.shape as SphereShape3D).radius = anchor_zone_radius
+
+	_zone.body_entered.connect(_on_zone_body_entered)
+	_zone.body_exited.connect(_on_zone_body_exited)
+
+func _update_zone_radius() -> void:
+	if not is_instance_valid(_zone):
+		return
+
+	# get_node_or_null returns Variant -> do NOT use :=
+	var node: Node = _zone.get_node_or_null("CollisionShape3D")
+	var cs: CollisionShape3D = node as CollisionShape3D
+	if cs == null:
+		return
+
+	# cs.shape is also Variant-ish -> do NOT use :=
+	var sphere: SphereShape3D = cs.shape as SphereShape3D
+	if sphere == null:
+		return
+
+	var danger01: float = _get_player_danger01()
+
+	# walking -> small detection radius
+	# sprinting -> large detection radius
+	var sprint_mult: float = 1.35 if _is_sprinting else 1.0
+
+	# more danger => bigger radius (up to +60%)
+	var danger_mult: float = 1.0 + danger_zone_radius_bonus * danger01
+
+	sphere.radius = anchor_zone_radius * danger_mult * sprint_mult
+
+
+
+func _on_zone_body_entered(b: Node) -> void:
+	if b == _player:
+		_player_in_zone = true
+		print("PLAYER ENTERED ZONE")
+
+func _on_zone_body_exited(b: Node) -> void:
+	if b == _player:
+		_player_in_zone = false
+		print("PLAYER EXITED ZONE")
+
+
+
+func _get_tier(d: float) -> int:
+	if d <= near_dist: return 2 # near
+	if d <= mid_dist: return 1  # mid
+	if d <= far_dist: return 0  # far
+	return -1                  # silent
+
+
 #debug spheres for anchors 
 func _create_debug_markers() -> void:
 	_debug_markers_root = Node3D.new()
@@ -196,6 +365,7 @@ func _create_debug_markers() -> void:
 		m.global_position = _anchors[i]
 		_debug_markers_root.add_child(m)
 
+
 func _highlight_active_anchor() -> void:
 	#scale the active one up 
 	if _debug_markers_root == null:
@@ -208,6 +378,7 @@ func _highlight_active_anchor() -> void:
 			child.scale = Vector3.ONE * 2.5
 		else:
 			child.scale = Vector3.ONE
+
 
 #audio choosing based off of distance 
 func _update_anchor_pressure(delta: float) -> void:
@@ -228,10 +399,12 @@ func _update_anchor_pressure(delta: float) -> void:
 		_t_breath_pitch = breath_pitch_mid
 		_set_audio_targets(off_db, off_db, off_db)            #silent
 
+
 func _set_audio_targets(far_db: float, breath_db: float, tense_db: float) -> void:
 	_t_far = far_db
 	_t_breath = breath_db
 	_t_tense = tense_db
+
 
 func _update_audio(delta: float) -> void:
 	if _p_far:
@@ -244,22 +417,38 @@ func _update_audio(delta: float) -> void:
 	if _p_tense:
 		_p_tense.volume_db = lerp(_p_tense.volume_db, _t_tense, delta * audio_fade_speed)
 
+
 #udio system (3 layers)
 func _build_audio() -> void:
 	_p_far = _make_player(cue_far)
 	_p_breath = _make_player(cue_breath)
 	_p_tense = _make_player(cue_tense)
 
-#manifesting enemy under conditions
+
 func _can_manifest_now() -> bool:
-	var player_pos: Vector3 = _player.global_position
-	var d := player_pos.distance_to(_anchor_pos)
-	if d > manifest_distance:
+	# If we are CLOSE, spawn no matter what (so it feels like it was already there)
+	var d: float = _player.global_position.distance_to(_anchor_pos)
+	if d <= near_dist:
+		return true
+
+	# Must be inside detection zone (maze-friendly, no LOS-to-point requirement)
+	if not _player_in_zone:
 		return false
 
-	#based on distance to anchor
-	#if player can see the anchor point
-	return bool(_player.call("can_see_point", _anchor_pos, manifest_view_dot))
+	# Otherwise require player to face the anchor (awareness gameplay)
+	var danger01: float = _get_player_danger01()
+	var dot_needed: float = float(lerp(manifest_view_dot, manifest_view_dot_min, danger01))
+	return _is_player_facing_anchor(dot_needed)
+
+
+func _is_player_facing_anchor(dot_threshold: float) -> bool:
+	var cam := _player.get_node("CameraPivot/Camera3D") as Camera3D
+	if cam == null:
+		return false
+	var forward := (-cam.global_transform.basis.z).normalized()
+	var to_anchor := (_anchor_pos - cam.global_position).normalized()
+	return forward.dot(to_anchor) >= dot_threshold
+
 
 #spawning real enemy node to anchor and adds it to the group "enemy"
 func _manifest_at_anchor() -> void:
@@ -280,6 +469,8 @@ func _manifest_at_anchor() -> void:
 
 	_state = State.MANIFESTED
 	_lose_sight_timer = 0.0
+	_manifest_timer = 0.0
+	_linger_timer = 0.0
 
 #checking if player sees the enemy 
 func _update_manifested(delta: float) -> void:
@@ -289,15 +480,44 @@ func _update_manifested(delta: float) -> void:
 	if _manifested == null:
 		_state = State.ANCHORED
 		return
+
+	#lock enemy for a short time so it doesn't "dip" instantly in a maze
+	_manifest_timer += delta
+	if _manifest_timer < min_manifest_time:
+		return
+
 	#if player looks aways, enemy disappears 
 	#cooldown starts 
-	var sees: bool = bool(_player.call("is_enemy_visible", _manifested))
-	if sees:
+	var d: float = _player.global_position.distance_to(_anchor_pos)
+
+	# IMPORTANT: in very close range, do NOT rely on LOS.
+	# LOS flickers around corners / near walls and causes instant "dips".
+	# Use facing cone only to decide if player "looked away".
+	if d <= near_dist:
+		_linger_timer += delta
+
+	var danger01: float = _get_player_danger01()
+	var dot_needed: float = float(lerp(manifest_view_dot, manifest_view_dot_min, danger01))
+
+		# While lingering, do NOT demanifest just because the player looks away.
+		# This allows the player to freeze, rotate camera, panic, etc.
+	if _linger_timer < linger_time_near:
+			# Optional: if player IS facing him, reset lose-sight so punish has time to happen
+		if _is_player_facing_anchor(dot_needed):
+			_lose_sight_timer = 0.0
+		return
+
+		# After linger time is over, return to normal "look away -> disappear" behaviour
+	if _is_player_facing_anchor(dot_needed):
 		_lose_sight_timer = 0.0
-	else:
-		_lose_sight_timer += delta
-		if _lose_sight_timer >= lose_sight_clear_time:
-			_demanifest_and_clear("player looked away")
+		return
+
+	_lose_sight_timer += delta
+	if _lose_sight_timer >= lose_sight_clear_time:
+		_demanifest_and_clear("linger ended, player looked away")
+	return
+
+
 
 #punishment system 
 #emitted when look timer exceeds treshold 
@@ -307,6 +527,7 @@ func _on_player_punish_requested() -> void:
 		return
 
 	_start_punish()
+
 
 #delets the manifested enemy and spawns it in front of the camera 
 func _start_punish() -> void:
@@ -339,6 +560,7 @@ func _start_punish() -> void:
 	#push audio hard tense
 	_set_audio_targets(off_db, active_db, active_db)
 
+
 #removes enemy and goes cooldown 
 func _end_punish() -> void:
 	if is_instance_valid(_manifested):
@@ -349,6 +571,7 @@ func _end_punish() -> void:
 	_set_audio_targets(off_db, off_db, off_db)
 	_enter_cooldown("punish ended")
 
+
 func _demanifest_and_clear(reason: String = "") -> void:
 	if is_instance_valid(_manifested):
 		_manifested.queue_free()
@@ -358,6 +581,7 @@ func _demanifest_and_clear(reason: String = "") -> void:
 	_set_audio_targets(off_db, off_db, off_db)
 	_enter_cooldown(reason)
 
+
 #coldown + pacing influenced by sprint/danger
 func _enter_cooldown(reason: String = "") -> void:
 	_state = State.COOLDOWN
@@ -366,13 +590,18 @@ func _enter_cooldown(reason: String = "") -> void:
 	var cd := base_cooldown
 
 	#running slows recovery => longer cooldown
+	# NOTE: gameplay request: sprint should reduce cooldown pressure (more frequent attacks),
+	# so we MULTIPLY by sprint_cooldown_multiplier (0.6 => shorter cooldown).
 	if _is_sprinting:
-		cd = cd / max(0.05, sprint_cooldown_multiplier)
+		cd *= sprint_cooldown_multiplier
 
 	#more danger => longer cooldown
-	cd *= lerp(1.0, 1.0 + danger_cooldown_factor, danger)
+	# NOTE: gameplay request: more danger => shorter cooldown (more aggressive),
+	# so we reduce cooldown as danger rises.
+	cd *= lerp(1.0, 1.0 - danger_cooldown_factor, danger)
 
-	_timer = cd
+	_timer = max(0.2, cd)
+
 
 #depends on player style of play 
 func _get_next_anchor_interval() -> float:
@@ -385,7 +614,11 @@ func _get_next_anchor_interval() -> float:
 	#danger reduces interval => more frequent anchor selection
 	interval *= lerp(1.0, 1.0 - danger_interval_factor, danger)
 
+	# a bit extra pressure from aggression
+	interval *= lerp(1.0, 0.75, _aggression)
+
 	return max(0.8, interval)
+
 
 func _get_player_danger01() -> float:
 	# Variant-safe: if property missing, get() returns null -> float(null)=0.0
@@ -395,8 +628,10 @@ func _get_player_danger01() -> float:
 		return 0.0
 	return clamp(dl / md, 0.0, 1.0)
 
+
 func _on_player_sprinting_changed(s: bool) -> void:
 	_is_sprinting = s
+
 
 func _make_player(stream: AudioStream) -> AudioStreamPlayer:
 	var p := AudioStreamPlayer.new()
@@ -407,6 +642,7 @@ func _make_player(stream: AudioStream) -> AudioStreamPlayer:
 	if stream != null:
 		p.play()
 	return p
+
 
 #UI debug for enemy closeness 
 func _debug_update(delta: float) -> void:
@@ -473,5 +709,3 @@ func _debug_update(delta: float) -> void:
 
 	if _player.has_method("set_director_debug_text"):
 		_player.call("set_director_debug_text", info, col)
-		
-		

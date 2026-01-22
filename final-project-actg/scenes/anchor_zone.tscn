@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://0fcw45wkoyjr"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_b200k"]
+radius = 7.0
+
+[node name="AnchorZone" type="Area3D"]
+collision_layer = 33
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_b200k")

@@ -7,8 +7,8 @@ var _is_sprinting_now := false
 
 
 #basic player vars
-@export var speed = 2.0
-@export var sprint_speed := 7.0
+@export var speed = 1.5
+@export var sprint_speed := 5.0
 @export var mouse_sensitivity = 0.2
 @export var gravity : float = -9.8
 @export var jump_velocity := 4.5
@@ -34,7 +34,7 @@ var can_sprint := true
 #decreases while walking/standing still
 @export var danger_decrease_rate := 0.25
 #upper limit danger
-@export var max_danger := 10.0
+@export var max_danger := 20.0
 #sprint multiplies danger level 
 @export var sprint_danger_multiplier := 5.0
 

@@ -61,6 +61,8 @@ size = Vector3(102.7357, 0.1, 100.14758)
 [node name="TestLevel" type="Node3D"]
 
 [node name="Maze" parent="." instance=ExtResource("4_x4b8f")]
+maze_width = 5
+maze_height = 5
 
 [node name="MoonLight" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.8660254, -0.3535534, 0.3535534, 0, 0.7071068, 0.7071068, -0.5, -0.61237246, 0.61237246, -0.2537079, 1.2563438, -0.6434746)
