@@ -22,7 +22,7 @@ tonemap_white = 4.2
 glow_bloom = 0.1
 fog_light_color = Color(0.1483027, 0.2418809, 0.28377596, 1)
 volumetric_fog_enabled = true
-volumetric_fog_albedo = Color(0.05117902, 0.19859737, 0.22833616, 1)
+volumetric_fog_albedo = Color(0.0073355837, 0.17366254, 0.25523767, 1)
 volumetric_fog_emission_energy = 0.4
 adjustment_brightness = 0.42
 
@@ -55,7 +55,7 @@ material = SubResource("StandardMaterial3D_tmr53")
 size = Vector3(0.007, 0.4, 0)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hsoxx"]
-albedo_color = Color(1.3461569e-07, 0.093095414, 6.016344e-09, 1)
+albedo_color = Color(0.003391289, 0.08240492, 0, 1)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_x4b8f"]
 material = SubResource("StandardMaterial3D_hsoxx")
@@ -72,7 +72,7 @@ maze_height = 6
 
 [node name="MoonLight" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.8660254, -0.35355338, 0.35355338, 0, 0.70710677, 0.70710677, -0.5, -0.6123724, 0.6123724, -0.2537079, 1.2563438, -0.6434746)
-light_color = Color(0.44209185, 0.66279614, 0.7841313, 1)
+light_color = Color(0.45928192, 0.50988704, 0.54789233, 1)
 shadow_enabled = true
 shadow_bias = 0.692
 shadow_opacity = 0.75

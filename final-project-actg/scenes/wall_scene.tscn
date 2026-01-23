@@ -6,7 +6,7 @@
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dmn8w"]
 albedo_texture = ExtResource("2_deuai")
 roughness_texture = ExtResource("2_1cish")
-uv1_scale = Vector3(1.455, 1.455, 1.455)
+uv1_scale = Vector3(0.685, 0.685, 0.685)
 uv1_triplanar = true
 
 [sub_resource type="BoxMesh" id="BoxMesh_jgun7"]
