@@ -3,6 +3,7 @@ extends Node3D
 #horror direction that controls an invisible enemy presence using anchors 
 #manifesting a real enemy only when rules are met 
 
+#lifecycle of the enemy 
 enum State { COOLDOWN, ANCHORED, MANIFESTED, PUNISH }
 
 @export var maze_path: NodePath
@@ -22,13 +23,15 @@ enum State { COOLDOWN, ANCHORED, MANIFESTED, PUNISH }
 
 @export var anchor_zone_scene: PackedScene
 @export var anchor_zone_radius := 9.0 # meters
+
 var _zone: Area3D = null
 var _player_in_zone := false
 
-# --- danger-driven behaviour tuning (director only) ---
-@export var danger_zone_radius_bonus := 0.8 # up to +60% radius at max danger
-@export var manifest_view_dot_min := 0.65   # more danger => wider cone (lower dot)
-# -----------------------------------------------
+var _awareness_target: Node3D = null
+
+#danger-driven behaviour tuning
+@export var danger_zone_radius_bonus := 0.8 #up to +60% radius at max danger
+@export var manifest_view_dot_min := 0.65   #more danger => wider cone (lower dot)
 
 #timing/pacing
 @export var base_anchor_interval := 16.0       #seconds between anchor picks when calm
@@ -44,17 +47,17 @@ var _player_in_zone := false
 @export var mid_dist := 15.0
 @export var near_dist := 8.0
 @export var min_pick_distance := 18.0      #anchors must be at least this far when chosen
-@export var max_pick_distance := 42.0     # optional cap, set to e.g. 60.0 if you want
+@export var max_pick_distance := 42.0     #optional cap
 @export var pick_attempts := 40            #tries before fallback
 
-#anchor must be this close AND visible to manifest
+#manifestation vars
 @export var manifest_distance := 8.0
 @export var manifest_view_dot := 0.85
+@export var manifest_los_distance := 10.0  #within this distance we require LOS
+@export var manifest_no_los_distance := 6.0 #within this distance LOS not required (around-corner allowance)
 
-@export var manifest_los_distance := 10.0  # within this distance we require LOS
-@export var manifest_no_los_distance := 6.0 # within this distance LOS not required (around-corner allowance)
-
-#if player looks away after manifest, we clear anchor after a short grace
+#timers used for manifest stability 
+#prevents instant vanish 
 @export var lose_sight_clear_time := 0.35
 var _lose_sight_timer := 0.0
 
@@ -63,8 +66,8 @@ var _lose_sight_timer := 0.0
 @export var punish_duration := 1.2
 
 var _aggression := 0.0 # 0..1
-@export var aggression_up := 0.20   # per second when chasing/noisy
-@export var aggression_down := 0.12 # per second when cautious
+@export var aggression_up := 0.20   #per second when chasing/noisy
+@export var aggression_down := 0.12 #per second when cautious
 
 #audio
 @export var cue_far: AudioStream
@@ -83,12 +86,8 @@ var _aggression := 0.0 # 0..1
 @export var breath_db_mid := -8.0
 @export var breath_db_near := -2.0
 
-@export var tier_hysteresis := 1.0
-var _current_tier := -1
-
-
 #manifest stability (prevents instant dip from LOS quirks)
-@export var min_manifest_time := 0.8 # seconds enemy must exist before it can disappear
+@export var min_manifest_time := 0.8 #seconds enemy must exist before it can disappear
 var _manifest_timer := 0.0
 
 var _repick_timer := 0.0
@@ -118,7 +117,6 @@ var _t_far := off_db
 var _t_breath := off_db
 var _t_tense := off_db
 var _t_breath_pitch := 1.0
-
 
 func _ready():
 	_maze = get_node_or_null(maze_path) as Node3D
@@ -154,13 +152,12 @@ func _process(delta: float) -> void:
 	if debug_enabled and debug_show_anchor_markers:
 		_highlight_active_anchor() #currently chosen anchor is a bit bigger 
 
-	# --- update aggression from player danger ---
+	#update aggression from player danger
 	var danger01 := _get_player_danger01()
-	# more danger => aggression rises, calm => drops
+	#more danger => aggression rises, calm => drops
 	var target_aggr := danger01
 	var rate := aggression_up if danger01 > _aggression else aggression_down
 	_aggression = move_toward(_aggression, target_aggr, rate * delta)
-	# ------------------------------------------
 
 	match _state:
 		#enemy waits until cooldown ends so it can anchor itself
@@ -225,29 +222,27 @@ func _pick_new_anchor() -> void:
 
 	var player_pos: Vector3 = _player.global_position
 
-	# --- danger-driven distance targeting ---
+	#danger-driven distance targeting
 	var danger01: float = _get_player_danger01()
 
-	# sprint pushes it a bit more aggressive (closer)
+	#sprint pushes it a bit more aggressive (closer)
 	var aggr01: float = clamp(danger01 + (0.25 if _is_sprinting else 0.0), 0.0, 1.0)
 
-	# At low danger: target is far-ish
-	# At high danger: target shifts toward near/mid
+	#at low danger: target is far-ish
+	#at high danger: target shifts toward near/mid
 	var desired_min: float = float(lerp(min_pick_distance, near_dist + 1.0, aggr01))
 	var desired_max: float = float(lerp(max_pick_distance, mid_dist + 2.0, aggr01))
 
-	# safety: make sure band is valid
+	#safety: make sure band is valid
 	if desired_max < desired_min + 0.5:
 		desired_max = desired_min + 0.5
 
-	# pick around the center of the band
+	#pick around the center of the band
 	var target_d: float = (desired_min + desired_max) * 0.5
-	# --------------------------------------
-
 	var best_idx := -1
 	var best_score := INF
 
-	# Try random samples first (cheap)
+	#try random samples first (cheap)
 	for attempt in pick_attempts:
 		var idx := randi() % _anchors.size()
 		if _anchors.size() > 1 and idx == _anchor_index:
@@ -256,17 +251,17 @@ func _pick_new_anchor() -> void:
 		var p: Vector3 = _anchors[idx]
 		var d: float = player_pos.distance_to(p)
 
-		# accept only anchors inside the danger-driven band
+		#accept only anchors inside the danger-driven band
 		if d < desired_min or d > desired_max:
 			continue
-
-		# score: closest to target distance wins
+			
+		#closest to target distance wins
 		var score: float = abs(d - target_d)
 		if score < best_score:
 			best_score = score
 			best_idx = idx
 
-	# Fallback: if none fit the band, choose the closest-to-target among ALL anchors
+	#if none fit the band, choose the closest-to-target among ALL anchors
 	if best_idx == -1:
 		for i in _anchors.size():
 			if i == _anchor_index:
@@ -289,8 +284,8 @@ func _pick_new_anchor() -> void:
 	_lose_sight_timer = 0.0
 	_repick_timer = _get_next_anchor_interval()
 
-
-
+#two functions for detection zone
+#if the player is here, enemy is allowed to exist 
 func _spawn_or_move_zone() -> void:
 	# cleanup old
 	if is_instance_valid(_zone):
@@ -441,18 +436,20 @@ func _build_audio() -> void:
 	_p_breath = _make_player(cue_breath)
 	_p_tense = _make_player(cue_tense)
 
-
+#manifestation logic
+#based on player responsibility 
 func _can_manifest_now() -> bool:
-	# If we are CLOSE, spawn no matter what (so it feels like it was already there)
+	#if we are CLOSE, spawn no matter what (so it creates the illusion like it was already there)
 	var d: float = _player.global_position.distance_to(_anchor_pos)
+	
 	if d <= near_dist:
 		return true
 
-	# Must be inside detection zone (maze-friendly, no LOS-to-point requirement)
+	#must be inside detection zone (maze-friendly, no LOS-to-point requirement)
 	if not _player_in_zone:
 		return false
 
-	# Otherwise require player to face the anchor (awareness gameplay)
+	#otherwise require player to face the anchor (awareness gameplay)
 	var danger01: float = _get_player_danger01()
 	var dot_needed: float = float(lerp(manifest_view_dot, manifest_view_dot_min, danger01))
 	return _is_player_facing_anchor(dot_needed)
@@ -482,7 +479,8 @@ func _manifest_at_anchor() -> void:
 
 	_manifested.global_position = _anchor_pos
 	_manifested.look_at(_player.global_position, Vector3.UP)
-	_manifested.add_to_group("enemy")
+	_manifested.add_to_group("enemy") # optional now, but keep if you want
+	_awareness_target = _manifested
 
 	_state = State.MANIFESTED
 	_lose_sight_timer = 0.0
@@ -490,39 +488,40 @@ func _manifest_at_anchor() -> void:
 
 #checking if player sees the enemy 
 func _update_manifested(delta: float) -> void:
-	#while manifested, keep audio tense
-	_set_audio_targets(off_db, active_db, active_db)
+	# Keep audio consistent with distance tiers (do NOT force always-intense)
+	_update_anchor_pressure(delta)
 
 	if _manifested == null:
 		_state = State.ANCHORED
 		return
 
-	#lock enemy for a short time so it doesn't "dip" instantly in a maze
+	# lock enemy for a short time so it doesn't "dip" instantly in a maze
 	_manifest_timer += delta
 	if _manifest_timer < min_manifest_time:
 		return
 
-	#if player looks aways, enemy disappears 
-	#cooldown starts 
 	var d: float = _player.global_position.distance_to(_anchor_pos)
 
-	# IMPORTANT: in very close range, do NOT rely on LOS.
-	# LOS flickers around corners / near walls and causes instant "dips".
-	# Use facing cone only to decide if player "looked away".
+	# RULE 1: NEAR = "sticky"
+	# If player is still in near range, enemy should NOT demanifest just because
+	# the player jitters the mouse / breaks the facing cone for a moment.
+	# Punishment is handled by the player script (looking too long).
+	if d <= near_dist:
+		_lose_sight_timer = 0.0
+		return
 
+	# RULE 2: OUTSIDE NEAR = normal behaviour
+	# Now we allow "look away => disappear" so the player can run away.
 	var danger01: float = _get_player_danger01()
 	var dot_needed: float = float(lerp(manifest_view_dot, manifest_view_dot_min, danger01))
 
-		# After linger time is over, return to normal "look away -> disappear" behaviour
 	if _is_player_facing_anchor(dot_needed):
 		_lose_sight_timer = 0.0
 		return
 
 	_lose_sight_timer += delta
 	if _lose_sight_timer >= lose_sight_clear_time:
-		_demanifest_and_clear("linger ended, player looked away")
-	return
-
+		_demanifest_and_clear("player looked away (outside near)")
 
 
 #punishment system 
@@ -533,7 +532,6 @@ func _on_player_punish_requested() -> void:
 		return
 
 	_start_punish()
-
 
 #delets the manifested enemy and spawns it in front of the camera 
 func _start_punish() -> void:
@@ -576,7 +574,7 @@ func _end_punish() -> void:
 	_anchor_index = -1
 	_set_audio_targets(off_db, off_db, off_db)
 	_enter_cooldown("punish ended")
-
+	_awareness_target = null
 
 func _demanifest_and_clear(reason: String = "") -> void:
 	if is_instance_valid(_manifested):
@@ -586,6 +584,7 @@ func _demanifest_and_clear(reason: String = "") -> void:
 	_anchor_index = -1
 	_set_audio_targets(off_db, off_db, off_db)
 	_enter_cooldown(reason)
+	_awareness_target = null
 
 
 #coldown + pacing influenced by sprint/danger
@@ -603,11 +602,10 @@ func _enter_cooldown(reason: String = "") -> void:
 
 	#more danger => longer cooldown
 	# NOTE: gameplay request: more danger => shorter cooldown (more aggressive),
-	# so we reduce cooldown as danger rises.
+	#so we reduce cooldown as danger rises.
 	cd *= lerp(1.0, 1.0 - danger_cooldown_factor, danger)
 
 	_timer = max(0.2, cd)
-
 
 #depends on player style of play 
 func _get_next_anchor_interval() -> float:
@@ -625,9 +623,10 @@ func _get_next_anchor_interval() -> float:
 
 	return max(0.8, interval)
 
-
+#core design choice 
+#danger system controlling the whole experience 
 func _get_player_danger01() -> float:
-	# Variant-safe: if property missing, get() returns null -> float(null)=0.0
+	
 	var dl := float(_player.get("danger_level"))
 	var md := float(_player.get("max_danger"))
 	if md <= 0.0:
@@ -637,7 +636,6 @@ func _get_player_danger01() -> float:
 
 func _on_player_sprinting_changed(s: bool) -> void:
 	_is_sprinting = s
-
 
 func _make_player(stream: AudioStream) -> AudioStreamPlayer:
 	var p := AudioStreamPlayer.new()
@@ -715,3 +713,10 @@ func _debug_update(delta: float) -> void:
 
 	if _player.has_method("set_director_debug_text"):
 		_player.call("set_director_debug_text", info, col)
+
+func get_awareness_target() -> Node3D:
+	#return the actual collider or node that player should raycast against.
+	#if manifested exists, use that. Otherwise, no target (sound-only).
+	if is_instance_valid(_manifested):
+		return _manifested
+	return null
