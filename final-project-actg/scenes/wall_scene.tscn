@@ -1,14 +1,16 @@
-[gd_scene load_steps=4 format=3 uid="uid://bmfytqsy4s558"]
+[gd_scene load_steps=6 format=3 uid="uid://bmfytqsy4s558"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_w0rr7"]
-albedo_color = Color(6.843591e-08, 0.09717705, 0.010634592, 1)
-metallic_specular = 0.05
-normal_enabled = true
-subsurf_scatter_enabled = true
-subsurf_scatter_strength = 0.24
+[ext_resource type="Texture2D" uid="uid://siy8yru5six5" path="res://assets/images/mossy_stone_wall_rough_2k.exr" id="2_1cish"]
+[ext_resource type="Texture2D" uid="uid://b4gm0vyfvhomi" path="res://assets/images/mossy_stone_wall_diff_2k.jpg" id="2_deuai"]
 
-[sub_resource type="BoxMesh" id="BoxMesh_w0rr7"]
-material = SubResource("StandardMaterial3D_w0rr7")
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dmn8w"]
+albedo_texture = ExtResource("2_deuai")
+roughness_texture = ExtResource("2_1cish")
+uv1_scale = Vector3(1.455, 1.455, 1.455)
+uv1_triplanar = true
+
+[sub_resource type="BoxMesh" id="BoxMesh_jgun7"]
+material = SubResource("StandardMaterial3D_dmn8w")
 size = Vector3(1, 2, 1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_w0rr7"]
@@ -17,7 +19,7 @@ size = Vector3(1, 2.015, 1)
 [node name="StaticBody3D" type="StaticBody3D"]
 
 [node name="WallScene" type="MeshInstance3D" parent="."]
-mesh = SubResource("BoxMesh_w0rr7")
+mesh = SubResource("BoxMesh_jgun7")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("BoxShape3D_w0rr7")
