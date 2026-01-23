@@ -1,30 +1,36 @@
-[gd_scene load_steps=19 format=3 uid="uid://dl2bibffowpb4"]
+[gd_scene load_steps=22 format=3 uid="uid://dl2bibffowpb4"]
 
 [ext_resource type="PackedScene" uid="uid://dn25a6avlx0kf" path="res://scenes/Player.tscn" id="1_gojnm"]
 [ext_resource type="PackedScene" uid="uid://th2etnrw2wps" path="res://scenes/Enemy.tscn" id="2_1c2mv"]
 [ext_resource type="Script" uid="uid://bh12h6cbvlrlx" path="res://scripts/rain_emitter.gd" id="2_j6w7d"]
+[ext_resource type="Texture2D" uid="uid://cpmwbvqhtcepl" path="res://assets/images/maze_and_floor/mud_forest_diff_2k.jpg" id="4_4asn1"]
 [ext_resource type="PackedScene" uid="uid://glfehe5e32b6" path="res://scenes/maze.tscn" id="4_x4b8f"]
 [ext_resource type="Script" uid="uid://bawc8nhh1pd4r" path="res://scripts/enemy_director.gd" id="5_qcd3b"]
-[ext_resource type="AudioStream" uid="uid://c7cudpo3htgp8" path="res://assets/rain.mp3" id="5_tmr53"]
-[ext_resource type="AudioStream" uid="uid://hhxhe8lea3k5" path="res://assets/first_cue.mp3" id="7_7gix3"]
-[ext_resource type="AudioStream" uid="uid://cjbqcljmmkkjg" path="res://assets/breathing.mp3" id="8_4asn1"]
-[ext_resource type="AudioStream" uid="uid://ds212260u8qbt" path="res://assets/very_high_danger.mp3" id="9_dw7u0"]
+[ext_resource type="AudioStream" uid="uid://c7cudpo3htgp8" path="res://assets/audio/rain.mp3" id="5_tmr53"]
+[ext_resource type="AudioStream" uid="uid://hhxhe8lea3k5" path="res://assets/audio/first_cue.mp3" id="7_7gix3"]
+[ext_resource type="AudioStream" uid="uid://cjbqcljmmkkjg" path="res://assets/audio/breathing.mp3" id="8_4asn1"]
+[ext_resource type="AudioStream" uid="uid://ds212260u8qbt" path="res://assets/audio/very_high_danger.mp3" id="9_dw7u0"]
 
-[sub_resource type="Environment" id="Environment_hsoxx"]
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_4asn1"]
+sky_top_color = Color(0.017775312, 0.14926532, 0.6670566, 1)
+sky_horizon_color = Color(9.62615e-08, 0.15781286, 0.23979747, 1)
+
+[sub_resource type="Sky" id="Sky_dw7u0"]
+sky_material = SubResource("ProceduralSkyMaterial_4asn1")
+
+[sub_resource type="Environment" id="Environment_4asn1"]
 background_mode = 1
-background_color = Color(0, 0.03368961, 0.122122996, 1)
+background_color = Color(0, 0.07553352, 0.15855318, 1)
+sky = SubResource("Sky_dw7u0")
 ambient_light_source = 2
-ambient_light_color = Color(0.122252114, 0.12225231, 0.12225207, 1)
-ambient_light_energy = 0.1
-tonemap_mode = 2
-tonemap_exposure = 0.7
-tonemap_white = 4.2
-glow_bloom = 0.1
-fog_light_color = Color(0.1483027, 0.2418809, 0.28377596, 1)
-volumetric_fog_enabled = true
-volumetric_fog_albedo = Color(0.0073355837, 0.17366254, 0.25523767, 1)
-volumetric_fog_emission_energy = 0.4
-adjustment_brightness = 0.42
+ambient_light_color = Color(0.19532713, 0.2694876, 0.2947238, 1)
+fog_enabled = true
+fog_light_color = Color(0.20612639, 0.2712959, 0.28601545, 1)
+fog_light_energy = 1.1
+fog_density = 0.023
+fog_sky_affect = 0.146
+fog_height = 1.0
+fog_height_density = 0.6
 
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_paw1w"]
 emission_shape = 3
@@ -54,11 +60,12 @@ billboard_mode = 1
 material = SubResource("StandardMaterial3D_tmr53")
 size = Vector3(0.007, 0.4, 0)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hsoxx"]
-albedo_color = Color(0.003391289, 0.08240492, 0, 1)
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7gix3"]
+albedo_texture = ExtResource("4_4asn1")
+uv1_scale = Vector3(60.61, 60.61, 60.61)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_x4b8f"]
-material = SubResource("StandardMaterial3D_hsoxx")
+material = SubResource("StandardMaterial3D_7gix3")
 size = Vector2(100, 100)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_tmr53"]
@@ -66,21 +73,21 @@ size = Vector3(102.7357, 0.1, 100.14758)
 
 [node name="TestLevel" type="Node3D"]
 
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_4asn1")
+
 [node name="Maze" parent="." instance=ExtResource("4_x4b8f")]
-maze_width = 6
-maze_height = 6
 
 [node name="MoonLight" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.8660254, -0.35355338, 0.35355338, 0, 0.70710677, 0.70710677, -0.5, -0.6123724, 0.6123724, -0.2537079, 1.2563438, -0.6434746)
-light_color = Color(0.45928192, 0.50988704, 0.54789233, 1)
+light_color = Color(0.11712272, 0.16395849, 0.2092559, 1)
+light_energy = 2.06
 shadow_enabled = true
-shadow_bias = 0.692
-shadow_opacity = 0.75
-shadow_blur = 3.391
+shadow_bias = 2.327
+shadow_opacity = 0.35
+shadow_blur = 1.131
+directional_shadow_max_distance = 474.7
 sky_mode = 1
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_hsoxx")
 
 [node name="Player" parent="." instance=ExtResource("1_gojnm")]
 

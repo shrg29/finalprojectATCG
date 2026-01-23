@@ -1,12 +1,12 @@
 [gd_scene load_steps=6 format=3 uid="uid://bmfytqsy4s558"]
 
-[ext_resource type="Texture2D" uid="uid://siy8yru5six5" path="res://assets/images/mossy_stone_wall_rough_2k.exr" id="2_1cish"]
-[ext_resource type="Texture2D" uid="uid://b4gm0vyfvhomi" path="res://assets/images/mossy_stone_wall_diff_2k.jpg" id="2_deuai"]
+[ext_resource type="Texture2D" uid="uid://siy8yru5six5" path="res://assets/images/maze_and_floor/mossy_stone_wall_rough_2k.exr" id="2_1cish"]
+[ext_resource type="Texture2D" uid="uid://b4gm0vyfvhomi" path="res://assets/images/maze_and_floor/mossy_stone_wall_diff_2k.jpg" id="2_deuai"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dmn8w"]
 albedo_texture = ExtResource("2_deuai")
 roughness_texture = ExtResource("2_1cish")
-uv1_scale = Vector3(0.685, 0.685, 0.685)
+uv1_scale = Vector3(0.535, 0.535, 0.535)
 uv1_triplanar = true
 
 [sub_resource type="BoxMesh" id="BoxMesh_jgun7"]
@@ -14,11 +14,12 @@ material = SubResource("StandardMaterial3D_dmn8w")
 size = Vector3(1, 2, 1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_w0rr7"]
-size = Vector3(1, 2.015, 1)
+size = Vector3(1, 2, 1)
 
 [node name="StaticBody3D" type="StaticBody3D"]
 
 [node name="WallScene" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01646161, 0)
 mesh = SubResource("BoxMesh_jgun7")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]

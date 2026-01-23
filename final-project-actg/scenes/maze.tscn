@@ -6,7 +6,5 @@
 
 [node name="Maze" type="Node3D"]
 script = ExtResource("1_fgl6e")
-maze_width = 25
-maze_height = 25
 wall_scene = ExtResource("2_l3biw")
 exit_door_scene = ExtResource("3_l3biw")

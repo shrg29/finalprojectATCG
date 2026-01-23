@@ -136,8 +136,8 @@ func _ready():
 	_build_audio()
 	#generating list of random positions in maze 
 	_generate_anchors()
-	if debug_enabled and debug_show_anchor_markers:
-		_create_debug_markers() #debug spheres for anchors 
+	#if debug_enabled and debug_show_anchor_markers:
+		#_create_debug_markers() #debug spheres for anchors 
 
 	#cooldown is the beginning state 
 	_enter_cooldown("start")
@@ -361,21 +361,21 @@ func _get_tier(d: float) -> int:
 
 
 #debug spheres for anchors 
-func _create_debug_markers() -> void:
-	_debug_markers_root = Node3D.new()
-	_debug_markers_root.name = "AnchorDebugMarkers"
-	add_child(_debug_markers_root)
-
-	#create tiny spheres for each anchor
-	var sphere := SphereMesh.new()
-	sphere.radius = debug_marker_size
-	sphere.height = debug_marker_size * 2.0
-
-	for i in _anchors.size():
-		var m := MeshInstance3D.new()
-		m.mesh = sphere
-		m.global_position = _anchors[i]
-		_debug_markers_root.add_child(m)
+#func _create_debug_markers() -> void:
+	#_debug_markers_root = Node3D.new()
+	#_debug_markers_root.name = "AnchorDebugMarkers"
+	#add_child(_debug_markers_root)
+#
+	##create tiny spheres for each anchor
+	#var sphere := SphereMesh.new()
+	#sphere.radius = debug_marker_size
+	#sphere.height = debug_marker_size * 2.0
+#
+	#for i in _anchors.size():
+		#var m := MeshInstance3D.new()
+		#m.mesh = sphere
+		#m.global_position = _anchors[i]
+		#_debug_markers_root.add_child(m)
 
 
 func _highlight_active_anchor() -> void:

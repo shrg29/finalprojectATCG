@@ -38,10 +38,10 @@ var can_sprint := true
 #sprint multiplies danger level 
 @export var sprint_danger_multiplier := 3.5
 
-# ---------- Awareness / Perception ----------
+#awareness system 
 @export var view_dot_threshold := 0.85
 # 0.85 ≈ ~31° cone. Lower = wider cone.
-@export var look_time_to_trigger := 2.5
+@export var look_time_to_trigger := 0.60
 # seconds before "punish" should happen
 @export var awareness_debug := true
 var is_looking_at_enemy := false

@@ -3,8 +3,11 @@ extends Node3D
 #default maze look 
 @export var maze_width := 25
 @export var maze_height := 25
+@export var wall_height := 2.4
+@export var wall_thickness := 0.35  # try 0.4–1.0
+
 #corridor size 
-@export var cell_size := 2.0 
+@export var cell_size := 2.0
 #root scenes
 @export var wall_scene: PackedScene
 @export var exit_door_scene: PackedScene
@@ -177,16 +180,16 @@ func build_maze():
 
 			#top wall
 			if cell["walls"]["top"]:
-				spawn_wall(pos_x, 0, pos_z - cell_size/2, Vector3(cell_size, 2.0, 0.2))
+				spawn_wall(pos_x, 0, pos_z - cell_size/2, Vector3(cell_size, wall_height, wall_thickness))
 			#bottom wall
 			if cell["walls"]["bottom"]:
-				spawn_wall(pos_x, 0, pos_z + cell_size/2, Vector3(cell_size, 2.0, 0.2))
+				spawn_wall(pos_x, 0, pos_z + cell_size/2, Vector3(cell_size, wall_height, wall_thickness))
 			#left wall
 			if cell["walls"]["left"]:
-				spawn_wall(pos_x - cell_size/2, 0, pos_z, Vector3(0.2, 2.0, cell_size))
+				spawn_wall(pos_x - cell_size/2, 0, pos_z, Vector3(wall_thickness, wall_height, cell_size))
 			#right wall
 			if cell["walls"]["right"]:
-				spawn_wall(pos_x + cell_size/2, 0, pos_z, Vector3(0.2, 2.0, cell_size))
+				spawn_wall(pos_x + cell_size/2, 0, pos_z, Vector3(wall_thickness, wall_height, cell_size))
 
 #spawn individual wall
 func spawn_wall(x: float, y: float, z: float, size: Vector3):
