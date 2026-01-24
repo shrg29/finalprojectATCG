@@ -317,5 +317,3 @@ func can_see_point(world_point: Vector3, dot_threshold: float = -1.0) -> bool:
 	#we don't have a collider at the point, so any hit means blocked
 	return false
 	
-func set_near_enemy_fx(on: bool) -> void:
-	$ScreenFX/FlickerRect.set_flicker_active(on)

@@ -1,7 +1,6 @@
-[gd_scene load_steps=4 format=3 uid="uid://dn25a6avlx0kf"]
+[gd_scene load_steps=3 format=3 uid="uid://dn25a6avlx0kf"]
 
 [ext_resource type="Script" uid="uid://cw8f7idygr68f" path="res://scripts/player.gd" id="1_xhfnw"]
-[ext_resource type="Script" uid="uid://dw2tsa6w6pudr" path="res://scenes/screen_fx.gd" id="2_v6fml"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_0rwas"]
 radius = 0.3
@@ -14,7 +13,6 @@ script = ExtResource("1_xhfnw")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
 
 [node name="Camera3D" type="Camera3D" parent="CameraPivot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10.142221, 0)
 current = true
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
@@ -23,6 +21,7 @@ shape = SubResource("CapsuleShape3D_0rwas")
 debug_color = Color(0, 0.5882353, 0.6392157, 0.59607846)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
+visible = false
 
 [node name="DangerLabel" type="Label" parent="CanvasLayer"]
 offset_left = 37.0
@@ -55,15 +54,3 @@ offset_top = 166.0
 offset_right = 189.0
 offset_bottom = 196.0
 theme_override_font_sizes/font_size = 21
-
-[node name="ScreenFX" type="CanvasLayer" parent="."]
-
-[node name="FlickerRect" type="ColorRect" parent="ScreenFX"]
-visible = false
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(1, 1, 1, 0.003921569)
-script = ExtResource("2_v6fml")

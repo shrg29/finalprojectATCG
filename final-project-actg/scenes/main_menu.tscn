@@ -1,8 +1,24 @@
-[gd_scene load_steps=4 format=3 uid="uid://db0y660270my1"]
+[gd_scene load_steps=7 format=3 uid="uid://db0y660270my1"]
 
 [ext_resource type="Script" uid="uid://lftv3tgf441i" path="res://scripts/main_menu.gd" id="1_bqqt6"]
-[ext_resource type="Texture2D" uid="uid://cmnlkqlfq3spp" path="res://assets/images/Album Cover💿🎧.jpeg" id="2_wu84c"]
-[ext_resource type="Texture2D" uid="uid://cm1ya5e1ewbcu" path="res://assets/images/button.png" id="3_8ln24"]
+[ext_resource type="Texture2D" uid="uid://efe801lj1u36" path="res://assets/images/Untitled design.png" id="2_wu84c"]
+[ext_resource type="FontFile" uid="uid://dv2rj5cx0dgxs" path="res://assets/HelpMe.ttf" id="4_8ln24"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wu84c"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+bg_color = Color(0, 0, 0, 0)
+border_color = Color(0.8, 0.8, 0.8, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rtw2f"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+border_color = Color(0.8, 0.8, 0.8, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8ln24"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+border_color = Color(0.8, 0.8, 0.8, 0)
 
 [node name="Control" type="Control"]
 layout_mode = 3
@@ -12,21 +28,85 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_bqqt6")
+metadata/_edit_group_ = true
 
 [node name="MainMenu" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -43.5
-offset_right = 2.0
-offset_bottom = 43.5
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 4
 texture = ExtResource("2_wu84c")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 0
+offset_left = 312.0
+offset_top = 120.0
+offset_right = 834.0
+offset_bottom = 323.0
+theme_override_colors/font_color = Color(0.4490252, 0, 0.0010253775, 1)
+theme_override_fonts/font = ExtResource("4_8ln24")
+theme_override_font_sizes/font_size = 171
+text = "HUSH"
+metadata/_edit_group_ = true
 
 [node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -419.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(172.595, 300)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+alignment = 1
+
+[node name="start" type="Button" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(0.27502722, 0, 0.002962881, 1)
+theme_override_colors/font_hover_color = Color(0.3440754, 0.34407574, 0.34407645, 1)
+theme_override_fonts/font = ExtResource("4_8ln24")
+theme_override_font_sizes/font_size = 31
+theme_override_styles/normal = SubResource("StyleBoxFlat_wu84c")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_rtw2f")
+theme_override_styles/hover = SubResource("StyleBoxFlat_8ln24")
+text = "START"
+
+[node name="instructions" type="Button" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(0.27502722, 0, 0.002962881, 1)
+theme_override_colors/font_hover_color = Color(0.3440754, 0.34407574, 0.34407645, 1)
+theme_override_fonts/font = ExtResource("4_8ln24")
+theme_override_font_sizes/font_size = 31
+theme_override_styles/normal = SubResource("StyleBoxFlat_wu84c")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_rtw2f")
+theme_override_styles/hover = SubResource("StyleBoxFlat_8ln24")
+text = "instructions"
+
+[node name="quit" type="Button" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(0.27502722, 0, 0.002962881, 1)
+theme_override_colors/font_hover_color = Color(0.3440754, 0.34407574, 0.34407645, 1)
+theme_override_fonts/font = ExtResource("4_8ln24")
+theme_override_font_sizes/font_size = 31
+theme_override_styles/normal = SubResource("StyleBoxFlat_wu84c")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_rtw2f")
+theme_override_styles/hover = SubResource("StyleBoxFlat_8ln24")
+text = "quit"
+
+[node name="InstructionsPanel" type="Panel" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -34,63 +114,40 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
-custom_minimum_size = Vector2(200, 300)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-alignment = 1
-
-[node name="Start" type="TextureButton" parent="CenterContainer/VBoxContainer"]
-custom_minimum_size = Vector2(150, 150)
-layout_mode = 2
-texture_normal = ExtResource("3_8ln24")
-stretch_mode = 0
-
-[node name="Instructions" type="TextureButton" parent="CenterContainer/VBoxContainer"]
-custom_minimum_size = Vector2(150, 150)
-layout_mode = 2
-texture_normal = ExtResource("3_8ln24")
-stretch_mode = 0
-
-[node name="Quit" type="TextureButton" parent="CenterContainer/VBoxContainer"]
-custom_minimum_size = Vector2(150, 150)
-layout_mode = 2
-texture_normal = ExtResource("3_8ln24")
-stretch_mode = 0
-
-[node name="InstructionsPanel" type="Panel" parent="."]
+[node name="TextEdit" type="RichTextLabel" parent="InstructionsPanel"]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -205.0
-offset_top = -114.0
-offset_right = 205.0
-offset_bottom = 126.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-
-[node name="TextEdit" type="RichTextLabel" parent="InstructionsPanel"]
-layout_mode = 0
-offset_left = 72.0
-offset_top = 86.0
-offset_right = 341.0
-offset_bottom = 148.0
-text = "Survive the maze. I advise you not to run. "
+theme_override_fonts/normal_font = ExtResource("4_8ln24")
+theme_override_font_sizes/normal_font_size = 31
+text = "Survive the maze."
 horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="PlayAnyway" type="TextureButton" parent="InstructionsPanel"]
-layout_mode = 0
-offset_left = 155.0
-offset_top = 164.0
-offset_right = 251.0
-offset_bottom = 260.0
-texture_normal = ExtResource("3_8ln24")
+[node name="PlayAnyway" type="Button" parent="InstructionsPanel"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -168.0
+offset_bottom = -117.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(0.27502722, 0, 0.002962881, 1)
+theme_override_colors/font_hover_color = Color(0.3440754, 0.34407574, 0.34407645, 1)
+theme_override_fonts/font = ExtResource("4_8ln24")
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = SubResource("StyleBoxFlat_wu84c")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_rtw2f")
+theme_override_styles/hover = SubResource("StyleBoxFlat_8ln24")
+text = "Okay"
 
-[connection signal="pressed" from="CenterContainer/VBoxContainer/Start" to="." method="_on_start_pressed"]
-[connection signal="pressed" from="CenterContainer/VBoxContainer/Instructions" to="." method="_on_instructions_pressed"]
-[connection signal="pressed" from="CenterContainer/VBoxContainer/Quit" to="." method="_on_quit_pressed"]
+[connection signal="pressed" from="CenterContainer/VBoxContainer/start" to="." method="_on_start_pressed"]
+[connection signal="pressed" from="CenterContainer/VBoxContainer/instructions" to="." method="_on_instructions_pressed"]
+[connection signal="pressed" from="CenterContainer/VBoxContainer/quit" to="." method="_on_quit_pressed"]
 [connection signal="pressed" from="InstructionsPanel/PlayAnyway" to="." method="_on_play_anyway_pressed"]

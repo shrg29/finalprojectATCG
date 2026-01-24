@@ -1,6 +1,24 @@
-[gd_scene load_steps=2 format=3 uid="uid://5acvhpdvceqw"]
+[gd_scene load_steps=7 format=3 uid="uid://5acvhpdvceqw"]
 
-[ext_resource type="Texture2D" uid="uid://cm1ya5e1ewbcu" path="res://assets/images/button.png" id="1_xeevv"]
+[ext_resource type="Script" uid="uid://dawoflglm0i07" path="res://scripts/game_over.gd" id="1_racf3"]
+[ext_resource type="Texture2D" uid="uid://2peducl7f6mp" path="res://assets/images/Untitled design (1)tyyy.png" id="1_tbwuq"]
+[ext_resource type="FontFile" uid="uid://dv2rj5cx0dgxs" path="res://assets/HelpMe.ttf" id="3_racf3"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7m3ot"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+bg_color = Color(0, 0, 0, 0)
+border_color = Color(0.8, 0.8, 0.8, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_v3hpu"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+border_color = Color(0.8, 0.8, 0.8, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_irg28"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+border_color = Color(0.8, 0.8, 0.8, 0)
 
 [node name="GameOver" type="Control"]
 layout_mode = 3
@@ -9,6 +27,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_racf3")
 
 [node name="TextureRect" type="TextureRect" parent="."]
 layout_mode = 1
@@ -17,6 +36,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+texture = ExtResource("1_tbwuq")
+expand_mode = 1
 
 [node name="CenterContainer" type="CenterContainer" parent="."]
 layout_mode = 1
@@ -28,11 +49,42 @@ grow_vertical = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
 layout_mode = 2
+alignment = 1
 
-[node name="TryAgain" type="TextureButton" parent="CenterContainer/VBoxContainer"]
+[node name="TryAgain" type="Button" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
-texture_normal = ExtResource("1_xeevv")
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(0.27502722, 0, 0.002962881, 1)
+theme_override_colors/font_hover_color = Color(0.3440754, 0.34407574, 0.34407645, 1)
+theme_override_fonts/font = ExtResource("3_racf3")
+theme_override_font_sizes/font_size = 31
+theme_override_styles/normal = SubResource("StyleBoxFlat_7m3ot")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_v3hpu")
+theme_override_styles/hover = SubResource("StyleBoxFlat_irg28")
+text = "Try again"
 
-[node name="GiveUp" type="TextureButton" parent="CenterContainer/VBoxContainer"]
+[node name="GiveUp" type="Button" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
-texture_normal = ExtResource("1_xeevv")
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(0.27502722, 0, 0.002962881, 1)
+theme_override_colors/font_hover_color = Color(0.3440754, 0.34407574, 0.34407645, 1)
+theme_override_fonts/font = ExtResource("3_racf3")
+theme_override_font_sizes/font_size = 31
+theme_override_styles/normal = SubResource("StyleBoxFlat_7m3ot")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_v3hpu")
+theme_override_styles/hover = SubResource("StyleBoxFlat_irg28")
+text = "Give up"
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 0
+offset_left = 158.0
+offset_top = 117.0
+offset_right = 1049.0
+offset_bottom = 250.0
+theme_override_colors/font_color = Color(0.68235296, 0.68235296, 0.68235296, 1)
+theme_override_fonts/font = ExtResource("3_racf3")
+theme_override_font_sizes/font_size = 111
+text = "MHM.. TASTY..."
+
+[connection signal="pressed" from="CenterContainer/VBoxContainer/TryAgain" to="." method="_on_try_again_pressed"]
+[connection signal="pressed" from="CenterContainer/VBoxContainer/GiveUp" to="." method="_on_give_up_pressed"]

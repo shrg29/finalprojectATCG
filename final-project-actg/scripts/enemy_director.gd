@@ -63,7 +63,9 @@ var _lose_sight_timer := 0.0
 
 #punish spawn
 @export var punish_distance_from_camera := 1.2
-@export var punish_duration := 1.2
+@export var punish_duration := 4.0
+@export var game_over_scene_path: String = "res://scenes/game_over.tscn"
+@export var pause_before_game_over := true
 
 var _aggression := 0.0 # 0..1
 @export var aggression_up := 0.20   #per second when chasing/noisy
@@ -112,8 +114,8 @@ func _ready():
 	#(MOVED TO AudioManager: director now only reports tier)
 	#generating list of random positions in maze 
 	_generate_anchors()
-	if debug_enabled and debug_show_anchor_markers:
-		_create_debug_markers() #debug spheres for anchors 
+	#if debug_enabled and debug_show_anchor_markers:
+		#_create_debug_markers() #debug spheres for anchors 
 
 	#cooldown is the beginning state 
 	_enter_cooldown("start")
@@ -125,8 +127,8 @@ func _process(delta: float) -> void:
 
 	#every frame it updates audio fade and pitch 
 	#(MOVED TO AudioManager)
-	if debug_enabled and debug_show_anchor_markers:
-		_highlight_active_anchor() #currently chosen anchor is a bit bigger 
+	#if debug_enabled and debug_show_anchor_markers:
+		#_highlight_active_anchor() #currently chosen anchor is a bit bigger 
 
 	#update aggression from player danger
 	var danger01 := _get_player_danger01()
@@ -192,8 +194,9 @@ func _process(delta: float) -> void:
 		#if player looks at the enemy for too long - punish
 		State.PUNISH:
 			_timer -= delta
+			_update_punish_pose()
 			if _timer <= 0.0:
-				_end_punish()
+				_trigger_game_over()
 
 	#updates every half a second 
 	_debug_update(delta)
@@ -362,8 +365,8 @@ func _update_anchor_pressure(delta: float) -> void:
 	#(MOVED: actual audio fading is in AudioManager, director only reports tier)
 	var tier := _get_tier(d)
 	AudioManager.set_enemy_presence_tier(tier)
+	print("TIER:", tier) # DEBUG
 	
-	_player.call("set_near_enemy_fx", tier == 2)
 
 
 #manifestation logic
@@ -470,6 +473,7 @@ func _start_punish() -> void:
 	_state = State.PUNISH
 	_timer = punish_duration
 
+	
 	#remove anchor monster
 	if is_instance_valid(_manifested):
 		_manifested.queue_free()
@@ -495,7 +499,23 @@ func _start_punish() -> void:
 
 	#push audio hard tense
 	AudioManager.force_enemy_intense()
+	AudioManager.play_jumpscare()
 
+	
+	if _player.has_method("set_input_enabled"):
+		_player.call("set_input_enabled", false)
+
+func _update_punish_pose() -> void:
+	if _player == null or not is_instance_valid(_manifested):
+		return
+
+	var cam := _player.get_node("CameraPivot/Camera3D") as Camera3D
+	if cam == null:
+		return
+		
+	var forward := -cam.global_transform.basis.z
+	_manifested.global_position = cam.global_position + forward * punish_distance_from_camera
+	_manifested.global_rotation = cam.global_rotation
 
 #removes enemy and goes cooldown 
 func _end_punish() -> void:
@@ -571,6 +591,28 @@ func _get_player_danger01() -> float:
 func _on_player_sprinting_changed(s: bool) -> void:
 	_is_sprinting = s
 
+func _trigger_game_over() -> void:
+	# stop director logic from doing anything else
+	set_process(false)
+
+	# cleanup jumpscare enemy if you want (optional: keep it until scene swap)
+	if is_instance_valid(_manifested):
+		_manifested.queue_free()
+	_manifested = null
+
+	# optional: stop enemy audio so it doesn't carry into next scene
+	AudioManager.clear_enemy_audio()
+
+	# optional pause (useful if you have screen flash / freeze frame)
+	if pause_before_game_over:
+		get_tree().paused = false # keep false unless you want a hard freeze
+
+	# go to game over
+	if game_over_scene_path != "":
+		get_tree().change_scene_to_file(game_over_scene_path)
+	else:
+		push_warning("EnemyDirector: game_over_scene_path is empty.")
+
 
 #UI debug for enemy closeness 
 func _debug_update(delta: float) -> void:
@@ -637,36 +679,36 @@ func _debug_update(delta: float) -> void:
 	if _player.has_method("set_director_debug_text"):
 		_player.call("set_director_debug_text", info, col)
 		
-#debug spheres for anchors 
-func _create_debug_markers() -> void:
-	_debug_markers_root = Node3D.new()
-	_debug_markers_root.name = "AnchorDebugMarkers"
-	add_child(_debug_markers_root)
-
-	#create tiny spheres for each anchor
-	var sphere := SphereMesh.new()
-	sphere.radius = debug_marker_size
-	sphere.height = debug_marker_size * 2.0
-
-	for i in _anchors.size():
-		var m := MeshInstance3D.new()
-		m.mesh = sphere
-		m.global_position = _anchors[i]
-		_debug_markers_root.add_child(m)
-
-
-func _highlight_active_anchor() -> void:
-	#scale the active one up 
-	if _debug_markers_root == null:
-		return
-	for i in _debug_markers_root.get_child_count():
-		var child := _debug_markers_root.get_child(i) as Node3D
-		if child == null:
-			continue
-		if i == _anchor_index:
-			child.scale = Vector3.ONE * 2.5
-		else:
-			child.scale = Vector3.ONE
+##debug spheres for anchors 
+#func _create_debug_markers() -> void:
+	#_debug_markers_root = Node3D.new()
+	#_debug_markers_root.name = "AnchorDebugMarkers"
+	#add_child(_debug_markers_root)
+#
+	##create tiny spheres for each anchor
+	#var sphere := SphereMesh.new()
+	#sphere.radius = debug_marker_size
+	#sphere.height = debug_marker_size * 2.0
+#
+	#for i in _anchors.size():
+		#var m := MeshInstance3D.new()
+		#m.mesh = sphere
+		#m.global_position = _anchors[i]
+		#_debug_markers_root.add_child(m)
+#
+#
+#func _highlight_active_anchor() -> void:
+	##scale the active one up 
+	#if _debug_markers_root == null:
+		#return
+	#for i in _debug_markers_root.get_child_count():
+		#var child := _debug_markers_root.get_child(i) as Node3D
+		#if child == null:
+			#continue
+		#if i == _anchor_index:
+			#child.scale = Vector3.ONE * 2.5
+		#else:
+			#child.scale = Vector3.ONE
 
 
 func get_awareness_target() -> Node3D:
@@ -675,3 +717,4 @@ func get_awareness_target() -> Node3D:
 	if is_instance_valid(_manifested):
 		return _manifested
 	return null
+	

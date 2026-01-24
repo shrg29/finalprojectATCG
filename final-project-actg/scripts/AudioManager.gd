@@ -1,9 +1,10 @@
 extends Node
 
 #movement music
-@export var walk_pitch := 1.0
-@export var sprint_pitch := 2.0
+@export var walk_pitch := 0.8
+@export var sprint_pitch := 1.30
 @export var fade_speed := 8.0
+
 #when player stops moving, fade out then stop
 @export var fade_out_db := -30.0
 
@@ -15,16 +16,20 @@ var _is_active := false
 
 @onready var movement_music: AudioStream = preload("res://assets/audio/walking.mp3")
 #udio system (3 layers)
-@onready var cue_far: AudioStream = preload("res://assets/audio/first_cue.mp3")
+@onready var cue_far: AudioStream = preload("res://assets/audio/second (mp3cut.net).mp3")
 @onready var cue_breath: AudioStream = preload("res://assets/audio/breathing.mp3")
+@onready var sfx_jump1: AudioStream = preload("res://assets/audio/jumpscare.mp3")
+@onready var sfx_jump2: AudioStream = preload("res://assets/audio/punish.mp3")
+@export var sfx_bus := "SFX"
+
 
 @export var enemy_bus := "Enemy"
 @export var enemy_fade_speed := 6.0
 @export var enemy_active_db := -8.0
 @export var enemy_off_db := -40.0
 
-@export var breath_pitch_mid := 1.0
-@export var breath_pitch_near := 1.35
+@export var breath_pitch_mid := 0.91
+@export var breath_pitch_near := 1.2
 @export var pitch_fade_speed := 6.0
 
 @export var breath_db_mid := -8.0
@@ -32,7 +37,7 @@ var _is_active := false
 
 #far cue "nice beginning" (so it doesn't feel like it starts out of nowhere)
 @export var far_attack_time := 1.0        #0.6–1.2 feels good for horror
-@export var far_attack_from_db := -60.0   #start basically inaudible
+@export var far_attack_from_db := -10.0   #start basically inaudible
 @export var far_retrigger_silence_db := -45.0 #must be below this to count as "silent"
 
 #near range background music is lower (bed stays, but quieter)
@@ -42,7 +47,7 @@ var _is_active := false
 var _p_far: AudioStreamPlayer
 var _p_breath: AudioStreamPlayer
 
-var _t_far := -40.0
+var _t_far := -10.0
 var _t_breath := -40.0
 var _t_breath_pitch := 1.0
 
@@ -61,7 +66,7 @@ func _ready():
 	_player.bus = "Music"
 	add_child(_player)
 	#set default movement music here (no need for Player to pass it in)
-	set_music_track(movement_music, -6.0)
+	set_music_track(movement_music, -14.0)
 	#enemy cue players
 	_build_enemy_audio()
 
@@ -178,3 +183,18 @@ func _update_enemy_audio(delta: float) -> void:
 	if _p_breath:
 		_p_breath.volume_db = lerp(_p_breath.volume_db, _t_breath, delta * enemy_fade_speed)
 		_p_breath.pitch_scale = lerp(_p_breath.pitch_scale, _t_breath_pitch, delta * pitch_fade_speed)
+
+func play_jumpscare() -> void:
+	var p1 := AudioStreamPlayer.new()
+	p1.bus = sfx_bus
+	p1.stream = sfx_jump1
+	add_child(p1)
+	p1.finished.connect(p1.queue_free)
+	p1.play()
+	
+	var p2 := AudioStreamPlayer.new()
+	p2.bus = sfx_bus
+	p2.stream = sfx_jump2
+	add_child(p2)
+	p2.finished.connect(p2.queue_free)
+	p2.play()
