@@ -10,9 +10,11 @@ extends Control
 func _ready():
 	center_container.visible = true
 	instructions_panel.visible = false
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+
 
 func _on_start_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/test_level.tscn")
+	get_tree().change_scene_to_file("res://scenes/main_scene.tscn")
 
 func _on_quit_pressed() -> void:
 	get_tree().quit()
@@ -23,4 +25,4 @@ func _on_instructions_pressed() -> void:
 	instructions_panel.visible = true
 
 func _on_play_anyway_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/test_level.tscn")
+	get_tree().change_scene_to_file("res://scenes/main_scene.tscn")

@@ -1,12 +1,12 @@
 [gd_scene load_steps=19 format=3 uid="uid://dl2bibffowpb4"]
 
-[ext_resource type="PackedScene" uid="uid://dn25a6avlx0kf" path="res://scenes/Player.tscn" id="1_gojnm"]
-[ext_resource type="PackedScene" uid="uid://th2etnrw2wps" path="res://scenes/Enemy.tscn" id="2_1c2mv"]
-[ext_resource type="Script" uid="uid://bh12h6cbvlrlx" path="res://scripts/rain_emitter.gd" id="2_j6w7d"]
-[ext_resource type="Texture2D" uid="uid://cpmwbvqhtcepl" path="res://assets/images/maze_and_floor/mud_forest_diff_2k.jpg" id="4_4asn1"]
-[ext_resource type="PackedScene" uid="uid://glfehe5e32b6" path="res://scenes/maze.tscn" id="4_x4b8f"]
-[ext_resource type="Script" uid="uid://bawc8nhh1pd4r" path="res://scripts/enemy_director.gd" id="5_qcd3b"]
-[ext_resource type="AudioStream" uid="uid://c7cudpo3htgp8" path="res://assets/audio/rain.mp3" id="5_tmr53"]
+[ext_resource type="PackedScene" uid="uid://glfehe5e32b6" path="res://scenes/maze.tscn" id="1_c16ls"]
+[ext_resource type="PackedScene" uid="uid://dn25a6avlx0kf" path="res://scenes/Player.tscn" id="2_18nlu"]
+[ext_resource type="Script" uid="uid://bh12h6cbvlrlx" path="res://scripts/rain_emitter.gd" id="3_c1pb6"]
+[ext_resource type="Texture2D" uid="uid://cpmwbvqhtcepl" path="res://assets/images/maze_and_floor/mud_forest_diff_2k.jpg" id="4_6wevv"]
+[ext_resource type="AudioStream" uid="uid://c7cudpo3htgp8" path="res://assets/audio/rain.mp3" id="5_e1cbu"]
+[ext_resource type="Script" uid="uid://bawc8nhh1pd4r" path="res://scripts/enemy_director.gd" id="6_mngbo"]
+[ext_resource type="PackedScene" uid="uid://th2etnrw2wps" path="res://scenes/Enemy.tscn" id="7_4w45t"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_4asn1"]
 sky_top_color = Color(0.017775312, 0.14926532, 0.6670566, 1)
@@ -58,7 +58,7 @@ material = SubResource("StandardMaterial3D_tmr53")
 size = Vector3(0.007, 0.4, 0)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7gix3"]
-albedo_texture = ExtResource("4_4asn1")
+albedo_texture = ExtResource("4_6wevv")
 uv1_scale = Vector3(60.61, 60.61, 60.61)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_x4b8f"]
@@ -68,14 +68,14 @@ size = Vector2(100, 100)
 [sub_resource type="BoxShape3D" id="BoxShape3D_tmr53"]
 size = Vector3(102.7357, 0.1, 100.14758)
 
-[node name="TestLevel" type="Node3D"]
+[node name="MainScene" type="Node3D"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_4asn1")
 
-[node name="Maze" parent="." instance=ExtResource("4_x4b8f")]
-maze_width = 6
-maze_height = 6
+[node name="Maze" parent="." instance=ExtResource("1_c16ls")]
+maze_width = 5
+maze_height = 5
 
 [node name="MoonLight" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.8660254, -0.35355338, 0.35355338, 0, 0.70710677, 0.70710677, -0.5, -0.6123724, 0.6123724, -0.2537079, 1.2563438, -0.6434746)
@@ -88,11 +88,11 @@ shadow_blur = 1.131
 directional_shadow_max_distance = 474.7
 sky_mode = 1
 
-[node name="Player" parent="." instance=ExtResource("1_gojnm")]
+[node name="Player" parent="." instance=ExtResource("2_18nlu")]
 
 [node name="RainEmitter" type="Node3D" parent="Player"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12.527607, 0)
-script = ExtResource("2_j6w7d")
+script = ExtResource("3_c1pb6")
 player_path = NodePath("..")
 
 [node name="GPUParticles3D" type="GPUParticles3D" parent="Player/RainEmitter"]
@@ -134,12 +134,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.93675995, 0.28082275, -0.0
 shape = SubResource("BoxShape3D_tmr53")
 
 [node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
-stream = ExtResource("5_tmr53")
+stream = ExtResource("5_e1cbu")
 volume_db = -14.308
 autoplay = true
 
 [node name="EnemyDirector" type="Node3D" parent="."]
-script = ExtResource("5_qcd3b")
+script = ExtResource("6_mngbo")
 maze_path = NodePath("../Maze")
 player_path = NodePath("../Player")
-manifested_enemy_scene = ExtResource("2_1c2mv")
+manifested_enemy_scene = ExtResource("7_4w45t")

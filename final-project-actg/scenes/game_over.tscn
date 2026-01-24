@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://5acvhpdvceqw"]
+[gd_scene load_steps=9 format=3 uid="uid://5acvhpdvceqw"]
 
 [ext_resource type="Script" uid="uid://dawoflglm0i07" path="res://scripts/game_over.gd" id="1_racf3"]
 [ext_resource type="Texture2D" uid="uid://2peducl7f6mp" path="res://assets/images/Untitled design (1)tyyy.png" id="1_tbwuq"]
@@ -19,6 +19,10 @@ border_color = Color(0.8, 0.8, 0.8, 0)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_irg28"]
 bg_color = Color(0.6, 0.6, 0.6, 0)
 border_color = Color(0.8, 0.8, 0.8, 0)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_tbwuq"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_racf3"]
 
 [node name="GameOver" type="Control"]
 layout_mode = 3
@@ -61,6 +65,8 @@ theme_override_font_sizes/font_size = 31
 theme_override_styles/normal = SubResource("StyleBoxFlat_7m3ot")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_v3hpu")
 theme_override_styles/hover = SubResource("StyleBoxFlat_irg28")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_tbwuq")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_racf3")
 text = "Try again"
 
 [node name="GiveUp" type="Button" parent="CenterContainer/VBoxContainer"]
