@@ -5,7 +5,6 @@ signal punish_requested()
 
 var _is_sprinting_now := false
 
-
 #basic player vars
 @export var speed = 1.5
 @export var sprint_speed := 5.0
@@ -13,11 +12,9 @@ var _is_sprinting_now := false
 @export var gravity : float = -9.8
 @export var jump_velocity := 4.5
 
-@export var movement_music: AudioStream
-
 #stamina system vars
 #max stamina you can have
-@export var max_stamina := 14.0     
+@export var max_stamina := 10.0     
 #drains per second while sprinting    
 @export var stamina_drain_rate := 4.2   
 #recharges per second when not sprinting
@@ -30,13 +27,13 @@ var can_sprint := true
 
 #danger level system
 #increases while walking
-@export var danger_increase_rate := 0.22
+@export var danger_increase_rate := 0.32
 #decreases while walking/standing still
 @export var danger_decrease_rate := 0.14
 #upper limit danger
 @export var max_danger := 10.0
 #sprint multiplies danger level 
-@export var sprint_danger_multiplier := 3.5
+@export var sprint_danger_multiplier := 4.0
 
 #awareness system 
 @export var view_dot_threshold := 0.85
@@ -65,7 +62,6 @@ var rotation_y = 0.0
 var rotation_x = 0.0
 
 func _ready():
-	AudioManager.set_music_track(movement_music, -6.0)
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
 func _input(event):
@@ -321,3 +317,5 @@ func can_see_point(world_point: Vector3, dot_threshold: float = -1.0) -> bool:
 	#we don't have a collider at the point, so any hit means blocked
 	return false
 	
+func set_near_enemy_fx(on: bool) -> void:
+	$ScreenFX/FlickerRect.set_flicker_active(on)

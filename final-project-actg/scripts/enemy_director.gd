@@ -18,7 +18,7 @@ enum State { COOLDOWN, ANCHORED, MANIFESTED, PUNISH }
 @export var debug_print_every := 0.5 #seconds (console spam limiter)
 
 #anchor generation
-@export var anchors_count := 60
+@export var anchors_count := 120
 @export var anchor_y := 1.0
 
 @export var anchor_zone_scene: PackedScene
@@ -35,7 +35,7 @@ var _awareness_target: Node3D = null
 
 #timing/pacing
 @export var base_anchor_interval := 16.0       #seconds between anchor picks when calm
-@export var sprint_interval_multiplier := 0.55  #sprinting => shorter interval (more frequent picks)
+@export var sprint_interval_multiplier := 0.60  #sprinting => shorter interval (more frequent picks)
 @export var danger_interval_factor := 0.55      #danger pushes interval down (0..1 factor weight)
 
 @export var base_cooldown := 5.0               #after clearing anchor/demanifest
@@ -69,23 +69,6 @@ var _aggression := 0.0 # 0..1
 @export var aggression_up := 0.20   #per second when chasing/noisy
 @export var aggression_down := 0.12 #per second when cautious
 
-#audio
-@export var cue_far: AudioStream
-@export var cue_breath: AudioStream
-@export var cue_tense: AudioStream
-
-@export var audio_bus := "Music"
-@export var audio_fade_speed := 6.0
-@export var active_db := -8.0
-@export var off_db := -40.0
-
-@export var breath_pitch_mid := 1.0
-@export var breath_pitch_near := 1.35
-@export var pitch_fade_speed := 6.0
-
-@export var breath_db_mid := -8.0
-@export var breath_db_near := -2.0
-
 #manifest stability (prevents instant dip from LOS quirks)
 @export var min_manifest_time := 0.8 #seconds enemy must exist before it can disappear
 var _manifest_timer := 0.0
@@ -107,16 +90,9 @@ var _timer := 0.0
 var _is_sprinting := false
 
 var _manifested: Node3D = null
+var _last_tier := -1
 
-#audio players
-var _p_far: AudioStreamPlayer
-var _p_breath: AudioStreamPlayer
-var _p_tense: AudioStreamPlayer
 
-var _t_far := off_db
-var _t_breath := off_db
-var _t_tense := off_db
-var _t_breath_pitch := 1.0
 
 func _ready():
 	_maze = get_node_or_null(maze_path) as Node3D
@@ -133,11 +109,11 @@ func _ready():
 	_player.connect("punish_requested", Callable(self, "_on_player_punish_requested"))
 
 	#creating 3 audioplayers for audio cues 
-	_build_audio()
+	#(MOVED TO AudioManager: director now only reports tier)
 	#generating list of random positions in maze 
 	_generate_anchors()
-	#if debug_enabled and debug_show_anchor_markers:
-		#_create_debug_markers() #debug spheres for anchors 
+	if debug_enabled and debug_show_anchor_markers:
+		_create_debug_markers() #debug spheres for anchors 
 
 	#cooldown is the beginning state 
 	_enter_cooldown("start")
@@ -148,7 +124,7 @@ func _process(delta: float) -> void:
 		return
 
 	#every frame it updates audio fade and pitch 
-	_update_audio(delta)
+	#(MOVED TO AudioManager)
 	if debug_enabled and debug_show_anchor_markers:
 		_highlight_active_anchor() #currently chosen anchor is a bit bigger 
 
@@ -179,6 +155,22 @@ func _process(delta: float) -> void:
 			# 2) Measure distance AFTER audio targets are set
 			var d := _player.global_position.distance_to(_anchor_pos)
 			var tier := _get_tier(d)
+			
+			# --- NEW: detect leaving NEAR -> MID ---
+			if _last_tier == 2 and tier == 1:
+				var danger01_now := _get_player_danger01()
+
+				# high danger: re-anchor close again (keeps pressure)
+				if danger01_now >= 0.65:
+					_pick_new_anchor()
+					_last_tier = tier
+					return
+
+				# low danger: optionally "relax" the anchor by allowing repick sooner
+				# (so it can drift further away)
+				_repick_timer = min(_repick_timer, 0.3)
+
+			_last_tier = tier
 
 			# 3) Only repick if NOT engaged (prevents audio jumping)
 			#    NEW: if player is in mid or near (tier >= 1) OR inside zone, freeze anchor
@@ -284,6 +276,7 @@ func _pick_new_anchor() -> void:
 	_lose_sight_timer = 0.0
 	_repick_timer = _get_next_anchor_interval()
 
+
 #two functions for detection zone
 #if the player is here, enemy is allowed to exist 
 func _spawn_or_move_zone() -> void:
@@ -313,6 +306,7 @@ func _spawn_or_move_zone() -> void:
 	_zone.body_entered.connect(_on_zone_body_entered)
 	_zone.body_exited.connect(_on_zone_body_exited)
 
+
 func _update_zone_radius() -> void:
 	if not is_instance_valid(_zone):
 		return
@@ -340,17 +334,16 @@ func _update_zone_radius() -> void:
 	sphere.radius = anchor_zone_radius * danger_mult * sprint_mult
 
 
-
 func _on_zone_body_entered(b: Node) -> void:
 	if b == _player:
 		_player_in_zone = true
 		print("PLAYER ENTERED ZONE")
 
+
 func _on_zone_body_exited(b: Node) -> void:
 	if b == _player:
 		_player_in_zone = false
 		print("PLAYER EXITED ZONE")
-
 
 
 func _get_tier(d: float) -> int:
@@ -360,81 +353,18 @@ func _get_tier(d: float) -> int:
 	return -1                  # silent
 
 
-#debug spheres for anchors 
-#func _create_debug_markers() -> void:
-	#_debug_markers_root = Node3D.new()
-	#_debug_markers_root.name = "AnchorDebugMarkers"
-	#add_child(_debug_markers_root)
-#
-	##create tiny spheres for each anchor
-	#var sphere := SphereMesh.new()
-	#sphere.radius = debug_marker_size
-	#sphere.height = debug_marker_size * 2.0
-#
-	#for i in _anchors.size():
-		#var m := MeshInstance3D.new()
-		#m.mesh = sphere
-		#m.global_position = _anchors[i]
-		#_debug_markers_root.add_child(m)
-
-
-func _highlight_active_anchor() -> void:
-	#scale the active one up 
-	if _debug_markers_root == null:
-		return
-	for i in _debug_markers_root.get_child_count():
-		var child := _debug_markers_root.get_child(i) as Node3D
-		if child == null:
-			continue
-		if i == _anchor_index:
-			child.scale = Vector3.ONE * 2.5
-		else:
-			child.scale = Vector3.ONE
-
-
 #audio choosing based off of distance 
 func _update_anchor_pressure(delta: float) -> void:
 	var player_pos: Vector3 = _player.global_position
 	var d := player_pos.distance_to(_anchor_pos)
 
 	#choose audio tier by distance
-	if d <= near_dist:
-		_t_breath_pitch = breath_pitch_near
-		_set_audio_targets(off_db, breath_db_near, active_db) #breath louder + tense ON
-	elif d <= mid_dist:
-		_t_breath_pitch = breath_pitch_mid
-		_set_audio_targets(active_db, breath_db_mid, off_db)  #far + breath
-	elif d <= far_dist:
-		_t_breath_pitch = breath_pitch_mid
-		_set_audio_targets(active_db, off_db, off_db)         #far only
-	else:
-		_t_breath_pitch = breath_pitch_mid
-		_set_audio_targets(off_db, off_db, off_db)            #silent
+	#(MOVED: actual audio fading is in AudioManager, director only reports tier)
+	var tier := _get_tier(d)
+	AudioManager.set_enemy_presence_tier(tier)
+	
+	_player.call("set_near_enemy_fx", tier == 2)
 
-
-func _set_audio_targets(far_db: float, breath_db: float, tense_db: float) -> void:
-	_t_far = far_db
-	_t_breath = breath_db
-	_t_tense = tense_db
-
-
-func _update_audio(delta: float) -> void:
-	if _p_far:
-		_p_far.volume_db = lerp(_p_far.volume_db, _t_far, delta * audio_fade_speed)
-
-	if _p_breath:
-		_p_breath.volume_db = lerp(_p_breath.volume_db, _t_breath, delta * audio_fade_speed)
-		_p_breath.pitch_scale = lerp(_p_breath.pitch_scale, _t_breath_pitch, delta * pitch_fade_speed)
-
-	if _p_tense:
-		_p_tense.volume_db = lerp(_p_tense.volume_db, _t_tense, delta * audio_fade_speed)
-
-
-#udio system (3 layers)
-func _build_audio() -> void:
-	_p_far = _make_player(cue_far)
-	_p_breath = _make_player(cue_breath)
-	_p_tense = _make_player(cue_tense)
 
 #manifestation logic
 #based on player responsibility 
@@ -486,6 +416,7 @@ func _manifest_at_anchor() -> void:
 	_lose_sight_timer = 0.0
 	_manifest_timer = 0.0
 
+
 #checking if player sees the enemy 
 func _update_manifested(delta: float) -> void:
 	# Keep audio consistent with distance tiers (do NOT force always-intense)
@@ -533,6 +464,7 @@ func _on_player_punish_requested() -> void:
 
 	_start_punish()
 
+
 #delets the manifested enemy and spawns it in front of the camera 
 func _start_punish() -> void:
 	_state = State.PUNISH
@@ -562,7 +494,7 @@ func _start_punish() -> void:
 	_manifested = jump
 
 	#push audio hard tense
-	_set_audio_targets(off_db, active_db, active_db)
+	AudioManager.force_enemy_intense()
 
 
 #removes enemy and goes cooldown 
@@ -572,9 +504,10 @@ func _end_punish() -> void:
 	_manifested = null
 
 	_anchor_index = -1
-	_set_audio_targets(off_db, off_db, off_db)
+	AudioManager.clear_enemy_audio()
 	_enter_cooldown("punish ended")
 	_awareness_target = null
+
 
 func _demanifest_and_clear(reason: String = "") -> void:
 	if is_instance_valid(_manifested):
@@ -582,7 +515,7 @@ func _demanifest_and_clear(reason: String = "") -> void:
 	_manifested = null
 
 	_anchor_index = -1
-	_set_audio_targets(off_db, off_db, off_db)
+	AudioManager.clear_enemy_audio()
 	_enter_cooldown(reason)
 	_awareness_target = null
 
@@ -607,6 +540,7 @@ func _enter_cooldown(reason: String = "") -> void:
 
 	_timer = max(0.2, cd)
 
+
 #depends on player style of play 
 func _get_next_anchor_interval() -> float:
 	var danger := _get_player_danger01()
@@ -623,10 +557,10 @@ func _get_next_anchor_interval() -> float:
 
 	return max(0.8, interval)
 
+
 #core design choice 
 #danger system controlling the whole experience 
 func _get_player_danger01() -> float:
-	
 	var dl := float(_player.get("danger_level"))
 	var md := float(_player.get("max_danger"))
 	if md <= 0.0:
@@ -636,16 +570,6 @@ func _get_player_danger01() -> float:
 
 func _on_player_sprinting_changed(s: bool) -> void:
 	_is_sprinting = s
-
-func _make_player(stream: AudioStream) -> AudioStreamPlayer:
-	var p := AudioStreamPlayer.new()
-	p.bus = audio_bus
-	p.stream = stream
-	p.volume_db = off_db
-	add_child(p)
-	if stream != null:
-		p.play()
-	return p
 
 
 #UI debug for enemy closeness 
@@ -688,7 +612,6 @@ func _debug_update(delta: float) -> void:
 			enemy_text = "ENEMY: LOST"
 			audio_text = "AUDIO: SILENT"
 
-	#show state on a small third line (remove if you want)
 	var state_line := ""
 	if _state == State.ANCHORED:
 		state_line = "STATE: ANCHORED"
@@ -713,6 +636,38 @@ func _debug_update(delta: float) -> void:
 
 	if _player.has_method("set_director_debug_text"):
 		_player.call("set_director_debug_text", info, col)
+		
+#debug spheres for anchors 
+func _create_debug_markers() -> void:
+	_debug_markers_root = Node3D.new()
+	_debug_markers_root.name = "AnchorDebugMarkers"
+	add_child(_debug_markers_root)
+
+	#create tiny spheres for each anchor
+	var sphere := SphereMesh.new()
+	sphere.radius = debug_marker_size
+	sphere.height = debug_marker_size * 2.0
+
+	for i in _anchors.size():
+		var m := MeshInstance3D.new()
+		m.mesh = sphere
+		m.global_position = _anchors[i]
+		_debug_markers_root.add_child(m)
+
+
+func _highlight_active_anchor() -> void:
+	#scale the active one up 
+	if _debug_markers_root == null:
+		return
+	for i in _debug_markers_root.get_child_count():
+		var child := _debug_markers_root.get_child(i) as Node3D
+		if child == null:
+			continue
+		if i == _anchor_index:
+			child.scale = Vector3.ONE * 2.5
+		else:
+			child.scale = Vector3.ONE
+
 
 func get_awareness_target() -> Node3D:
 	#return the actual collider or node that player should raycast against.
