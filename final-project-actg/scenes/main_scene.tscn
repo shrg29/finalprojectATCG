@@ -70,8 +70,6 @@ size = Vector3(102.7357, 0.1, 100.14758)
 environment = SubResource("Environment_6wevv")
 
 [node name="Maze" parent="." instance=ExtResource("1_c16ls")]
-maze_width = 5
-maze_height = 5
 
 [node name="MoonLight" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.8660254, -0.35355338, 0.35355338, 0, 0.70710677, 0.70710677, -0.5, -0.6123724, 0.6123724, -0.2537079, 1.2563438, -0.6434746)
