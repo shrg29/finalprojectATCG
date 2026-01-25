@@ -1,8 +1,8 @@
-[gd_scene load_steps=11 format=3 uid="uid://5acvhpdvceqw"]
+[gd_scene load_steps=11 format=3 uid="uid://p0ad6q8kk1vn"]
 
-[ext_resource type="Script" uid="uid://dawoflglm0i07" path="res://scripts/game_over.gd" id="1_racf3"]
-[ext_resource type="Texture2D" uid="uid://2peducl7f6mp" path="res://assets/images/Untitled design (1)tyyy.png" id="1_tbwuq"]
-[ext_resource type="FontFile" uid="uid://dv2rj5cx0dgxs" path="res://assets/HelpMe.ttf" id="3_racf3"]
+[ext_resource type="Texture2D" uid="uid://efe801lj1u36" path="res://assets/images/Untitled design.png" id="1_0dmgc"]
+[ext_resource type="Script" uid="uid://de26pyyjut3yr" path="res://scripts/game_completed.gd" id="1_ixxsr"]
+[ext_resource type="FontFile" uid="uid://dv2rj5cx0dgxs" path="res://assets/HelpMe.ttf" id="3_c4i75"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7m3ot"]
 content_margin_left = 16.0
@@ -24,18 +24,18 @@ border_color = Color(0.8, 0.8, 0.8, 0)
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_racf3"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_7m3ot"]
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ixxsr"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_v3hpu"]
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_sx7p3"]
 
-[node name="GameOver" type="Control"]
+[node name="GameCompleted" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_racf3")
+script = ExtResource("1_ixxsr")
 
 [node name="TextureRect" type="TextureRect" parent="."]
 layout_mode = 1
@@ -44,7 +44,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("1_tbwuq")
+texture = ExtResource("1_0dmgc")
 expand_mode = 1
 
 [node name="CenterContainer" type="CenterContainer" parent="."]
@@ -52,6 +52,8 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = 120.0
+offset_bottom = -2.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -64,7 +66,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_pressed_color = Color(0.27502722, 0, 0.002962881, 1)
 theme_override_colors/font_hover_color = Color(0.3440754, 0.34407574, 0.34407645, 1)
-theme_override_fonts/font = ExtResource("3_racf3")
+theme_override_fonts/font = ExtResource("3_c4i75")
 theme_override_font_sizes/font_size = 31
 theme_override_styles/normal = SubResource("StyleBoxFlat_7m3ot")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_v3hpu")
@@ -73,30 +75,32 @@ theme_override_styles/disabled = SubResource("StyleBoxEmpty_tbwuq")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_racf3")
 text = "Try again"
 
-[node name="GiveUp" type="Button" parent="CenterContainer/VBoxContainer"]
+[node name="Quit" type="Button" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_pressed_color = Color(0.27502722, 0, 0.002962881, 1)
 theme_override_colors/font_hover_color = Color(0.3440754, 0.34407574, 0.34407645, 1)
-theme_override_fonts/font = ExtResource("3_racf3")
+theme_override_fonts/font = ExtResource("3_c4i75")
 theme_override_font_sizes/font_size = 31
 theme_override_styles/normal = SubResource("StyleBoxFlat_7m3ot")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_v3hpu")
 theme_override_styles/hover = SubResource("StyleBoxFlat_irg28")
-theme_override_styles/disabled = SubResource("StyleBoxEmpty_7m3ot")
-theme_override_styles/focus = SubResource("StyleBoxEmpty_v3hpu")
-text = "Give up"
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_ixxsr")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_sx7p3")
+text = "quit"
 
 [node name="Label" type="Label" parent="."]
 layout_mode = 0
-offset_left = 158.0
-offset_top = 117.0
-offset_right = 1049.0
-offset_bottom = 250.0
-theme_override_colors/font_color = Color(0.68235296, 0.68235296, 0.68235296, 1)
-theme_override_fonts/font = ExtResource("3_racf3")
-theme_override_font_sizes/font_size = 111
-text = "MHM.. TASTY..."
+offset_left = 136.0
+offset_top = 135.0
+offset_right = 1027.0
+offset_bottom = 268.0
+theme_override_colors/font_color = Color(0.4509804, 0, 0, 1)
+theme_override_fonts/font = ExtResource("3_c4i75")
+theme_override_font_sizes/font_size = 56
+text = "YOU RAN AWAY THIS TIME..."
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [connection signal="pressed" from="CenterContainer/VBoxContainer/TryAgain" to="." method="_on_try_again_pressed"]
-[connection signal="pressed" from="CenterContainer/VBoxContainer/GiveUp" to="." method="_on_give_up_pressed"]
+[connection signal="pressed" from="CenterContainer/VBoxContainer/Quit" to="." method="_on_quit_pressed"]

@@ -198,3 +198,26 @@ func play_jumpscare() -> void:
 	add_child(p2)
 	p2.finished.connect(p2.queue_free)
 	p2.play()
+
+
+func stop_all_audio_for_win() -> void:
+	# Movement music
+	if is_instance_valid(_player):
+		_player.stop()
+
+	# Enemy layers
+	if is_instance_valid(_p_far):
+		_p_far.stop()
+	if is_instance_valid(_p_breath):
+		_p_breath.stop()
+
+	# Any one-shot SFX we spawned (jumpscare etc.)
+	for c in get_children():
+		if c is AudioStreamPlayer and c != _player and c != _p_far and c != _p_breath:
+			(c as AudioStreamPlayer).stop()
+			c.queue_free()
+
+	# Also reset targets so nothing fades back in if the scene lingers
+	_is_active = false
+	_target_db = fade_out_db
+	clear_enemy_audio()

@@ -66,6 +66,10 @@ var _lose_sight_timer := 0.0
 @export var punish_duration := 4.0
 @export var game_over_scene_path: String = "res://scenes/game_over.tscn"
 @export var pause_before_game_over := true
+@export var punish_height_offset := -1.5  # negative = lower, positive = higher
+@export var punish_extra_yaw_deg := 180.0     # extra turn during jumpscare
+@export var punish_zoom_multiplier := 0.4    # < 1.0 = closer, > 1.0 = farther
+
 
 var _aggression := 0.0 # 0..1
 @export var aggression_up := 0.20   #per second when chasing/noisy
@@ -492,8 +496,19 @@ func _start_punish() -> void:
 	get_tree().current_scene.add_child(jump)
 
 	var forward := -cam.global_transform.basis.z
-	jump.global_position = cam.global_position + forward * punish_distance_from_camera
+	jump.global_position = cam.global_position \
+	+ forward * punish_distance_from_camera \
+	+ Vector3(0, punish_height_offset, 0)
+
+	var dist: float = punish_distance_from_camera * punish_zoom_multiplier
+
+	jump.global_position = cam.global_position \
+		+ forward * dist \
+		+ Vector3(0, punish_height_offset, 0)
+
 	jump.global_rotation = cam.global_rotation
+	jump.rotate_y(deg_to_rad(punish_extra_yaw_deg))
+
 	jump.add_to_group("enemy")
 
 	_manifested = jump
@@ -515,8 +530,14 @@ func _update_punish_pose() -> void:
 		return
 		
 	var forward := -cam.global_transform.basis.z
-	_manifested.global_position = cam.global_position + forward * punish_distance_from_camera
+	var dist: float = punish_distance_from_camera * punish_zoom_multiplier
+
+	_manifested.global_position = cam.global_position \
+		+ forward * dist \
+		+ Vector3(0, punish_height_offset, 0)
+
 	_manifested.global_rotation = cam.global_rotation
+	_manifested.rotate_y(deg_to_rad(punish_extra_yaw_deg))
 
 #removes enemy and goes cooldown 
 func _end_punish() -> void:

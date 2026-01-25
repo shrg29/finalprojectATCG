@@ -10,7 +10,8 @@ extends Node3D
 @export var cell_size := 2.0
 #root scenes
 @export var wall_scene: PackedScene
-#@export var exit_door_scene: PackedScene
+@export var exit_door_scene: PackedScene
+@export var exit_door_y := 0.0
 
 #data for grid
 var grid := [] #array of cells 
@@ -40,7 +41,7 @@ func _ready():
 	carve_exit()
 
 	build_maze()
-	#spawn_exit_door()
+	spawn_exit_door()
 
 	print("Entrance:", entrance_cell)
 	print("Exit:", exit_cell)
@@ -71,30 +72,30 @@ func carve_exit():
 	elif x == maze_width - 1:
 		exit_cell["walls"]["right"] = false
 
-#func spawn_exit_door():
-	#if exit_door_scene == null:
-		#print("Exit door scene not assigned!")
-		#return
-#
-	#var x = exit_cell["x"]
-	#var y = exit_cell["y"]
-#
-	#var pos_x = x * cell_size + offset_x
-	#var pos_z = y * cell_size + offset_z
-	#var door_pos := Vector3(pos_x, 1.25, pos_z)
-#
-	#if y == 0:
-		#door_pos.z -= cell_size / 2
-	#elif y == maze_height - 1:
-		#door_pos.z += cell_size / 2
-	#elif x == 0:
-		#door_pos.x -= cell_size / 2
-	#elif x == maze_width - 1:
-		#door_pos.x += cell_size / 2
-#
-	#var door = exit_door_scene.instantiate()
-	#door.position = door_pos
-	#add_child(door)
+func spawn_exit_door() -> void:
+	if exit_door_scene == null:
+		print("Exit door scene not assigned!")
+		return
+
+	var x: int = exit_cell["x"]
+	var y: int = exit_cell["y"]
+
+	# center of exit cell
+	var door_pos: Vector3 = get_cell_world_position(x, y, exit_door_y)
+
+	# push it OUTSIDE the maze opening so player “walks through”
+	if y == 0:
+		door_pos.z -= cell_size / 2
+	elif y == maze_height - 1:
+		door_pos.z += cell_size / 2
+	elif x == 0:
+		door_pos.x -= cell_size / 2
+	elif x == maze_width - 1:
+		door_pos.x += cell_size / 2
+
+	var door: Node3D = exit_door_scene.instantiate() as Node3D
+	add_child(door)
+	door.global_position = door_pos
 
 
 #initializing the grid

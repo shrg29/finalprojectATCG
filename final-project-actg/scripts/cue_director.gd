@@ -12,7 +12,7 @@ extends Node3D
 @export var cue2_text := "..."
 @export var cue3_text := "..."
 
-@export var cue1_min_distance_from_player := 1.5
+@export var cue1_min_distance_from_player := 0.4
 
 # placement tuning
 @export var cue_height := 0.8

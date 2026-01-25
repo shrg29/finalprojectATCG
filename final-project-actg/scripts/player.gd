@@ -36,7 +36,7 @@ var can_sprint := true
 @export var sprint_danger_multiplier := 4.0
 
 #awareness system 
-@export var view_dot_threshold := 10.0
+@export var view_dot_threshold := 0.85
 # 0.85 ≈ ~31° cone. Lower = wider cone.
 @export var look_time_to_trigger := 0.60
 # seconds before "punish" should happen
