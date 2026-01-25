@@ -23,10 +23,6 @@ var _is_active := false
 @onready var sfx_pickup: AudioStream = preload("res://assets/audio/equip.mp3")
 @onready var sfx_ui_hover: AudioStream = preload("res://assets/audio/hover.mp3")
 
-@export var sfx_bus := "SFX"
-
-
-@export var enemy_bus := "Enemy"
 @export var enemy_fade_speed := 6.0
 @export var enemy_active_db := -8.0
 @export var enemy_off_db := -40.0
@@ -62,16 +58,36 @@ var _far_was_audible := false
 enum EnemyTier { SILENT = -1, FAR = 0, MID = 1, NEAR = 2 }
 
 func _ready():
+	await get_tree().process_frame
+	_init_audio()
+
 	_t_far = enemy_off_db
 	_t_breath = enemy_off_db
-	#movement music player
+
+
+func _init_audio():
 	_player = AudioStreamPlayer.new()
-	_player.bus = "Music"
+	_player.bus = "Master" # was "Music"
 	add_child(_player)
-	#set default movement music here (no need for Player to pass it in)
+
 	set_music_track(movement_music, -14.0)
-	#enemy cue players
 	_build_enemy_audio()
+
+
+	#print("enemy_bus raw = '", enemy_bus, "' len=", enemy_bus.length())
+	#print("sfx_bus raw   = '", sfx_bus, "' len=", sfx_bus.length())
+	#print("IDX Enemy via raw:", AudioServer.get_bus_index(enemy_bus))
+	#print("IDX Enemy literal:", AudioServer.get_bus_index("Enemy"))
+#
+	#print("=== AUDIO BUS LIST ===")
+	#print("Bus count:", AudioServer.bus_count)
+	#for i in range(AudioServer.bus_count):
+		#print(i, ":", AudioServer.get_bus_name(i))
+#
+	#print("IDX Music:", AudioServer.get_bus_index("Music"))
+	#print("IDX Enemy:", AudioServer.get_bus_index(enemy_bus))
+	#print("IDX SFX:", AudioServer.get_bus_index(sfx_bus))
+	#print("======================")
 
 func set_music_track(stream: AudioStream, volume_db: float = -6.0):
 	_base_db = volume_db
@@ -148,18 +164,14 @@ func _build_enemy_audio() -> void:
 
 func _make_enemy_player(stream: AudioStream) -> AudioStreamPlayer:
 	var p := AudioStreamPlayer.new()
-	p.bus = enemy_bus
+	p.bus = "Master" # was ENEMY_BUS
 	p.stream = stream
 	p.volume_db = enemy_off_db
 	add_child(p)
-
-	#always start if the stream exists (prevents “silent forever” bugs)
 	if p.stream != null:
 		p.play()
-	else:
-		push_warning("AudioManager: enemy cue stream is null on bus '%s'" % enemy_bus)
-
 	return p
+
 
 func _update_enemy_audio(delta: float) -> void:
 	#every frame it updates audio fade and pitch 
@@ -189,14 +201,14 @@ func _update_enemy_audio(delta: float) -> void:
 
 func play_jumpscare() -> void:
 	var p1 := AudioStreamPlayer.new()
-	p1.bus = sfx_bus
+	p1.bus = "Master"
 	p1.stream = sfx_jump1
 	add_child(p1)
 	p1.finished.connect(p1.queue_free)
 	p1.play()
 	
 	var p2 := AudioStreamPlayer.new()
-	p2.bus = sfx_bus
+	p2.bus = "Master"
 	p2.stream = sfx_jump2
 	add_child(p2)
 	p2.finished.connect(p2.queue_free)
@@ -243,7 +255,7 @@ func play_ui_sfx(stream: AudioStream, volume_db: float = -10.0) -> void:
 	if stream == null:
 		return
 	var p := AudioStreamPlayer.new()
-	p.bus = sfx_bus # your "SFX" bus
+	p.bus = "Master" # your "SFX" bus
 	p.stream = stream
 	p.volume_db = volume_db
 	add_child(p)

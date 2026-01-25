@@ -18,7 +18,7 @@ enum State { COOLDOWN, ANCHORED, MANIFESTED, PUNISH }
 @export var debug_print_every := 0.5 #seconds (console spam limiter)
 
 #anchor generation
-@export var anchors_count := 100
+@export var anchors_count := 104
 @export var anchor_y := 1.0
 
 @export var anchor_zone_scene: PackedScene
@@ -34,19 +34,19 @@ var _awareness_target: Node3D = null
 @export var manifest_view_dot_min := 0.65   #more danger => wider cone (lower dot)
 
 #timing/pacing
-@export var base_anchor_interval := 16.0       #seconds between anchor picks when calm
-@export var sprint_interval_multiplier := 0.60  #sprinting => shorter interval (more frequent picks)
-@export var danger_interval_factor := 0.55      #danger pushes interval down (0..1 factor weight)
+@export var base_anchor_interval := 18.0       #seconds between anchor picks when calm
+@export var sprint_interval_multiplier := 0.55  #sprinting => shorter interval (more frequent picks)
+@export var danger_interval_factor := 0.65      #danger pushes interval down (0..1 factor weight)
 
-@export var base_cooldown := 5.0               #after clearing anchor/demanifest
-@export var sprint_cooldown_multiplier := 0.75   #sprinting slows "recovery" (smaller = longer effective cooldown)
-@export var danger_cooldown_factor := 0.55
+@export var base_cooldown := 6.0               #after clearing anchor/demanifest
+@export var sprint_cooldown_multiplier := 0.65   #sprinting slows "recovery" (smaller = longer effective cooldown)
+@export var danger_cooldown_factor := 0.65
 
 #distances (in meters)
-@export var far_dist := 26.0
-@export var mid_dist := 15.0
-@export var near_dist := 8.0
-@export var min_pick_distance := 10.0      #anchors must be at least this far when chosen
+@export var far_dist := 28.0
+@export var mid_dist := 16.0
+@export var near_dist := 7.0
+@export var min_pick_distance := 14.0      #anchors must be at least this far when chosen
 @export var max_pick_distance := 42.0     #optional cap
 @export var pick_attempts := 40            #tries before fallback
 

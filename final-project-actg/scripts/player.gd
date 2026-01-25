@@ -14,11 +14,11 @@ var _is_sprinting_now := false
 
 #stamina system vars
 #max stamina you can have
-@export var max_stamina := 10.0     
+@export var max_stamina := 8.0     
 #drains per second while sprinting    
-@export var stamina_drain_rate := 4.2   
+@export var stamina_drain_rate := 5.0  
 #recharges per second when not sprinting
-@export var stamina_recovery_rate := 3.0
+@export var stamina_recovery_rate := 2.7
 #35% out of max stamina - unlocks sprint 
 @export var stamina_lock_threshold := 0.40 
 
@@ -27,18 +27,18 @@ var can_sprint := true
 
 #danger level system
 #increases while walking
-@export var danger_increase_rate := 0.32
+@export var danger_increase_rate := 0.28
 #decreases while walking/standing still
-@export var danger_decrease_rate := 0.14
+@export var danger_decrease_rate := 0.22
 #upper limit danger
 @export var max_danger := 10.0
 #sprint multiplies danger level 
-@export var sprint_danger_multiplier := 4.0
+@export var sprint_danger_multiplier := 4.5
 
 #awareness system 
-@export var view_dot_threshold := 1.8
+@export var view_dot_threshold := 0.85
 # 0.85 ≈ ~31° cone. Lower = wider cone.
-@export var look_time_to_trigger := 0.60
+@export var look_time_to_trigger := 0.75
 # seconds before "punish" should happen
 @export var awareness_debug := true
 var is_looking_at_enemy := false

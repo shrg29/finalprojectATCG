@@ -12,8 +12,8 @@ material = SubResource("StandardMaterial3D_gqquq")
 size = Vector3(0.7, 2.5, 1)
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_3gvst"]
-radius = 0.3
-height = 1.7670307
+radius = 0.35
+height = 2.813623
 
 [node name="Enemy" type="StaticBody3D" groups=["enemy"]]
 
@@ -21,12 +21,8 @@ height = 1.7670307
 visible = false
 mesh = SubResource("BoxMesh_gqquq")
 
-[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
-visible = false
-autoplay = true
-
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.014953613, -0.026325703, -0.12654972)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6224853, 0)
 shape = SubResource("CapsuleShape3D_3gvst")
 
 [node name="enemy1" parent="." instance=ExtResource("1_3gvst")]

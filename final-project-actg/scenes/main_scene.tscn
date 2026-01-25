@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://dl2bibffowpb4"]
+[gd_scene load_steps=20 format=3 uid="uid://dl2bibffowpb4"]
 
 [ext_resource type="PackedScene" uid="uid://glfehe5e32b6" path="res://scenes/maze.tscn" id="1_c16ls"]
 [ext_resource type="PackedScene" uid="uid://dn25a6avlx0kf" path="res://scenes/Player.tscn" id="2_18nlu"]
@@ -11,22 +11,14 @@
 [ext_resource type="Script" uid="uid://bti3f0rs31bki" path="res://scripts/cue_director.gd" id="9_6wevv"]
 [ext_resource type="PackedScene" uid="uid://2ka43sbr2tww" path="res://scenes/cueUI.tscn" id="9_c1pb6"]
 
-[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_4asn1"]
-sky_top_color = Color(0.017775312, 0.14926532, 0.6670566, 1)
-sky_horizon_color = Color(9.62615e-08, 0.15781286, 0.23979747, 1)
-
-[sub_resource type="Sky" id="Sky_dw7u0"]
-sky_material = SubResource("ProceduralSkyMaterial_4asn1")
-
-[sub_resource type="Environment" id="Environment_4asn1"]
+[sub_resource type="Environment" id="Environment_6wevv"]
 background_mode = 1
-background_color = Color(0, 0.07553352, 0.15855318, 1)
-sky = SubResource("Sky_dw7u0")
+background_color = Color(4.813075e-08, 0.042561322, 0.09287498, 1)
 ambient_light_source = 2
-ambient_light_color = Color(0.1419988, 0.20207706, 0.2221114, 1)
+ambient_light_color = Color(0.15754801, 0.20212188, 0.2265597, 1)
 ambient_light_energy = 0.3
 fog_enabled = true
-fog_light_color = Color(0.20612639, 0.2712959, 0.28601545, 1)
+fog_light_color = Color(0.2068483, 0.26843515, 0.28170943, 1)
 fog_light_energy = 0.65
 fog_density = 0.03
 fog_sky_affect = 0.146
@@ -74,14 +66,16 @@ size = Vector3(102.7357, 0.1, 100.14758)
 
 [node name="MainScene" type="Node3D"]
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_4asn1")
+[node name="WorldEnvironment2" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_6wevv")
 
 [node name="Maze" parent="." instance=ExtResource("1_c16ls")]
+maze_width = 5
+maze_height = 5
 
 [node name="MoonLight" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.8660254, -0.35355338, 0.35355338, 0, 0.70710677, 0.70710677, -0.5, -0.6123724, 0.6123724, -0.2537079, 1.2563438, -0.6434746)
-light_color = Color(0.30184165, 0.4310405, 0.44108653, 1)
+light_color = Color(0.25946215, 0.33592355, 0.36745113, 1)
 light_energy = 0.4
 shadow_enabled = true
 shadow_bias = 0.02

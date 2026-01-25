@@ -1,8 +1,8 @@
 extends Control
 
-@onready var start_button = $CenterContainer/VBoxContainer/Start
-@onready var instr_button = $CenterContainer/VBoxContainer/Instructions
-@onready var quit_button = $CenterContainer/VBoxContainer/Quit
+@onready var start_button = $CenterContainer/VBoxContainer/start
+@onready var instr_button = $CenterContainer/VBoxContainer/instructions
+@onready var quit_button = $CenterContainer/VBoxContainer/quit
 @onready var center_container = $CenterContainer
 @onready var instructions_panel = $InstructionsPanel
 @onready var title = $Label

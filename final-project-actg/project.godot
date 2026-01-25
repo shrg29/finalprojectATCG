@@ -14,6 +14,10 @@ config/name="finalProjectACTG"
 run/main_scene="uid://db0y660270my1"
 config/features=PackedStringArray("4.5", "Forward Plus")
 
+[audio]
+
+buses/default_bus_layout="uid://v328jghr8cau"
+
 [autoload]
 
 AudioManager="*res://scripts/AudioManager.gd"
