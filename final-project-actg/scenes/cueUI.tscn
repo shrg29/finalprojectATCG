@@ -1,0 +1,26 @@
+[gd_scene load_steps=3 format=3 uid="uid://2ka43sbr2tww"]
+
+[ext_resource type="Script" uid="uid://da2qm84qwhm1d" path="res://scripts/cue_ui.gd" id="1_tlao4"]
+[ext_resource type="FontFile" uid="uid://dv2rj5cx0dgxs" path="res://assets/HelpMe.ttf" id="2_gyadc"]
+
+[node name="CueUi" type="CanvasLayer"]
+script = ExtResource("1_tlao4")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(1, 1, 1, 0.023529412)
+
+[node name="Label" type="Label" parent="ColorRect"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("2_gyadc")
+horizontal_alignment = 1
+vertical_alignment = 1

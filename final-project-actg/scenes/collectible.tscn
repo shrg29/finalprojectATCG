@@ -1,0 +1,18 @@
+[gd_scene load_steps=4 format=3 uid="uid://b4ti6580bj2h8"]
+
+[ext_resource type="Script" uid="uid://calvk85iyfxhl" path="res://scripts/collectible.gd" id="1_bkg8t"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_k2x07"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_bkg8t"]
+radius = 0.3
+height = 0.6
+
+[node name="Collectible" type="Area3D"]
+script = ExtResource("1_bkg8t")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_k2x07")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_bkg8t")

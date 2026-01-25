@@ -216,3 +216,15 @@ func get_random_cell_world_position(y_height: float = 1.0) -> Vector3:
 
 	# local -> world (important if Maze node is moved)
 	return to_global(Vector3(pos_x, y_height, pos_z))
+
+
+func get_cell_world_position(x: int, y: int, y_height: float = 1.0) -> Vector3:
+	var pos_x := x * cell_size + offset_x
+	var pos_z := y * cell_size + offset_z
+	return to_global(Vector3(pos_x, y_height, pos_z))
+
+func get_entrance_world_position(y_height: float = 1.0) -> Vector3:
+	return get_cell_world_position(entrance_cell["x"], entrance_cell["y"], y_height)
+
+func get_exit_world_position(y_height: float = 1.0) -> Vector3:
+	return get_cell_world_position(exit_cell["x"], exit_cell["y"], y_height)

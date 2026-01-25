@@ -1,12 +1,15 @@
-[gd_scene load_steps=19 format=3 uid="uid://dl2bibffowpb4"]
+[gd_scene load_steps=22 format=3 uid="uid://dl2bibffowpb4"]
 
 [ext_resource type="PackedScene" uid="uid://glfehe5e32b6" path="res://scenes/maze.tscn" id="1_c16ls"]
 [ext_resource type="PackedScene" uid="uid://dn25a6avlx0kf" path="res://scenes/Player.tscn" id="2_18nlu"]
+[ext_resource type="PackedScene" uid="uid://b4ti6580bj2h8" path="res://scenes/collectible.tscn" id="2_c1pb6"]
 [ext_resource type="Script" uid="uid://bh12h6cbvlrlx" path="res://scripts/rain_emitter.gd" id="3_c1pb6"]
 [ext_resource type="Texture2D" uid="uid://cpmwbvqhtcepl" path="res://assets/images/maze_and_floor/mud_forest_diff_2k.jpg" id="4_6wevv"]
 [ext_resource type="AudioStream" uid="uid://c7cudpo3htgp8" path="res://assets/audio/rain.mp3" id="5_e1cbu"]
 [ext_resource type="Script" uid="uid://bawc8nhh1pd4r" path="res://scripts/enemy_director.gd" id="6_mngbo"]
 [ext_resource type="PackedScene" uid="uid://th2etnrw2wps" path="res://scenes/Enemy.tscn" id="7_4w45t"]
+[ext_resource type="Script" uid="uid://bti3f0rs31bki" path="res://scripts/cue_director.gd" id="9_6wevv"]
+[ext_resource type="PackedScene" uid="uid://2ka43sbr2tww" path="res://scenes/cueUI.tscn" id="9_c1pb6"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_4asn1"]
 sky_top_color = Color(0.017775312, 0.14926532, 0.6670566, 1)
@@ -20,11 +23,12 @@ background_mode = 1
 background_color = Color(0, 0.07553352, 0.15855318, 1)
 sky = SubResource("Sky_dw7u0")
 ambient_light_source = 2
-ambient_light_color = Color(0.19532713, 0.2694876, 0.2947238, 1)
+ambient_light_color = Color(0.1419988, 0.20207706, 0.2221114, 1)
+ambient_light_energy = 0.3
 fog_enabled = true
 fog_light_color = Color(0.20612639, 0.2712959, 0.28601545, 1)
-fog_light_energy = 1.1
-fog_density = 0.023
+fog_light_energy = 0.65
+fog_density = 0.0174
 fog_sky_affect = 0.146
 fog_height = 1.0
 fog_height_density = 0.6
@@ -74,15 +78,16 @@ size = Vector3(102.7357, 0.1, 100.14758)
 environment = SubResource("Environment_4asn1")
 
 [node name="Maze" parent="." instance=ExtResource("1_c16ls")]
-maze_width = 5
-maze_height = 5
+maze_width = 10
+maze_height = 10
 
 [node name="MoonLight" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.8660254, -0.35355338, 0.35355338, 0, 0.70710677, 0.70710677, -0.5, -0.6123724, 0.6123724, -0.2537079, 1.2563438, -0.6434746)
-light_color = Color(0.11712272, 0.16395849, 0.2092559, 1)
-light_energy = 2.06
+light_color = Color(0.30184165, 0.4310405, 0.44108653, 1)
+light_energy = 0.4
 shadow_enabled = true
-shadow_bias = 2.327
+shadow_bias = 0.02
+shadow_normal_bias = 0.4
 shadow_opacity = 0.35
 shadow_blur = 1.131
 directional_shadow_max_distance = 474.7
@@ -143,3 +148,15 @@ script = ExtResource("6_mngbo")
 maze_path = NodePath("../Maze")
 player_path = NodePath("../Player")
 manifested_enemy_scene = ExtResource("7_4w45t")
+
+[node name="CueUi" parent="." instance=ExtResource("9_c1pb6")]
+
+[node name="CueDirector" type="Node3D" parent="."]
+script = ExtResource("9_6wevv")
+maze_path = NodePath("../Maze")
+player_path = NodePath("../Player")
+cue_ui_path = NodePath("../CueUi")
+collectible_scene = ExtResource("2_c1pb6")
+cue1_text = "The breathing you hear is not yours."
+cue2_text = "Your way out of this nightmare is closer than you think.."
+cue3_text = "You can run ... but should you?"

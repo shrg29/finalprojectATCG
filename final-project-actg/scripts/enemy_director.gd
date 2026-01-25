@@ -71,6 +71,10 @@ var _aggression := 0.0 # 0..1
 @export var aggression_up := 0.20   #per second when chasing/noisy
 @export var aggression_down := 0.12 #per second when cautious
 
+@export var wall_probe_height := 1.0
+@export var wall_probe_length := 2.5   # ~ a bit more than half your corridor width
+@export var wall_probe_mask := 1 
+
 #manifest stability (prevents instant dip from LOS quirks)
 @export var min_manifest_time := 0.8 #seconds enemy must exist before it can disappear
 var _manifest_timer := 0.0
@@ -199,7 +203,7 @@ func _process(delta: float) -> void:
 				_trigger_game_over()
 
 	#updates every half a second 
-	_debug_update(delta)
+	#_debug_update(delta)
 
 
 #anchor generation/picking
@@ -208,7 +212,6 @@ func _generate_anchors() -> void:
 	for i in anchors_count:
 		var p := Vector3(_maze.call("get_random_cell_world_position", anchor_y))
 		_anchors.append(p)
-
 
 #having exactly one active anchor 
 func _pick_new_anchor() -> void:
@@ -340,13 +343,11 @@ func _update_zone_radius() -> void:
 func _on_zone_body_entered(b: Node) -> void:
 	if b == _player:
 		_player_in_zone = true
-		print("PLAYER ENTERED ZONE")
 
 
 func _on_zone_body_exited(b: Node) -> void:
 	if b == _player:
 		_player_in_zone = false
-		print("PLAYER EXITED ZONE")
 
 
 func _get_tier(d: float) -> int:
@@ -365,7 +366,6 @@ func _update_anchor_pressure(delta: float) -> void:
 	#(MOVED: actual audio fading is in AudioManager, director only reports tier)
 	var tier := _get_tier(d)
 	AudioManager.set_enemy_presence_tier(tier)
-	print("TIER:", tier) # DEBUG
 	
 
 
@@ -411,7 +411,8 @@ func _manifest_at_anchor() -> void:
 	get_tree().current_scene.add_child(_manifested)
 
 	_manifested.global_position = _anchor_pos
-	_manifested.look_at(_player.global_position, Vector3.UP)
+	#_manifested.look_at(_player.global_position, Vector3.UP)
+	_orient_enemy_back_to_wall(_manifested)
 	_manifested.add_to_group("enemy") # optional now, but keep if you want
 	_awareness_target = _manifested
 
@@ -614,70 +615,70 @@ func _trigger_game_over() -> void:
 		push_warning("EnemyDirector: game_over_scene_path is empty.")
 
 
-#UI debug for enemy closeness 
-func _debug_update(delta: float) -> void:
-	if not debug_enabled:
-		return
-
-	_debug_timer += delta
-	if _debug_timer < debug_print_every:
-		return
-	_debug_timer = 0.0
-
-	#distance to current anchor (this is what drives audio tiers)
-	var d := INF
-	if _anchor_index >= 0:
-		d = _player.global_position.distance_to(_anchor_pos)
-
-	#simple tier labels
-	var enemy_text := "ENEMY: NONE"
-	var audio_text := "AUDIO: SILENT"
-
-	if _state == State.COOLDOWN:
-		enemy_text = "ENEMY: NONE"
-		audio_text = "AUDIO: SILENT"
-	elif _state == State.PUNISH:
-		enemy_text = "ENEMY: PUNISH"
-		audio_text = "AUDIO: INTENSE"
-	else:
-		#ANCHORED or MANIFESTED: use distance tiers
-		if d <= near_dist:
-			enemy_text = "ENEMY: VERY CLOSE"
-			audio_text = "AUDIO: INTENSE"
-		elif d <= mid_dist:
-			enemy_text = "ENEMY: CLOSER"
-			audio_text = "AUDIO: BREATHING"
-		elif d <= far_dist:
-			enemy_text = "ENEMY: FAR AWAY"
-			audio_text = "AUDIO: FIRST CUE"
-		else:
-			enemy_text = "ENEMY: LOST"
-			audio_text = "AUDIO: SILENT"
-
-	var state_line := ""
-	if _state == State.ANCHORED:
-		state_line = "STATE: ANCHORED"
-	elif _state == State.MANIFESTED:
-		state_line = "STATE: MANIFESTED"
-	elif _state == State.COOLDOWN:
-		state_line = "STATE: COOLDOWN"
-	elif _state == State.PUNISH:
-		state_line = "STATE: PUNISH"
-
-	var info := enemy_text + "\n" + audio_text + "\n" + state_line
-
-	var col := Color(0.8, 0.9, 1.0)
-	if _state == State.MANIFESTED:
-		col = Color(1, 0.6, 0.3)
-	elif _state == State.PUNISH:
-		col = Color(1, 0.2, 0.2)
-	elif _state == State.COOLDOWN:
-		col = Color(0.7, 0.7, 0.7)
-
-	print(info)
-
-	if _player.has_method("set_director_debug_text"):
-		_player.call("set_director_debug_text", info, col)
+##UI debug for enemy closeness 
+#func _debug_update(delta: float) -> void:
+	#if not debug_enabled:
+		#return
+#
+	#_debug_timer += delta
+	#if _debug_timer < debug_print_every:
+		#return
+	#_debug_timer = 0.0
+#
+	##distance to current anchor (this is what drives audio tiers)
+	#var d := INF
+	#if _anchor_index >= 0:
+		#d = _player.global_position.distance_to(_anchor_pos)
+#
+	##simple tier labels
+	#var enemy_text := "ENEMY: NONE"
+	#var audio_text := "AUDIO: SILENT"
+#
+	#if _state == State.COOLDOWN:
+		#enemy_text = "ENEMY: NONE"
+		#audio_text = "AUDIO: SILENT"
+	#elif _state == State.PUNISH:
+		#enemy_text = "ENEMY: PUNISH"
+		#audio_text = "AUDIO: INTENSE"
+	#else:
+		##ANCHORED or MANIFESTED: use distance tiers
+		#if d <= near_dist:
+			#enemy_text = "ENEMY: VERY CLOSE"
+			#audio_text = "AUDIO: INTENSE"
+		#elif d <= mid_dist:
+			#enemy_text = "ENEMY: CLOSER"
+			#audio_text = "AUDIO: BREATHING"
+		#elif d <= far_dist:
+			#enemy_text = "ENEMY: FAR AWAY"
+			#audio_text = "AUDIO: FIRST CUE"
+		#else:
+			#enemy_text = "ENEMY: LOST"
+			#audio_text = "AUDIO: SILENT"
+#
+	#var state_line := ""
+	#if _state == State.ANCHORED:
+		#state_line = "STATE: ANCHORED"
+	#elif _state == State.MANIFESTED:
+		#state_line = "STATE: MANIFESTED"
+	#elif _state == State.COOLDOWN:
+		#state_line = "STATE: COOLDOWN"
+	#elif _state == State.PUNISH:
+		#state_line = "STATE: PUNISH"
+#
+	#var info := enemy_text + "\n" + audio_text + "\n" + state_line
+#
+	#var col := Color(0.8, 0.9, 1.0)
+	#if _state == State.MANIFESTED:
+		#col = Color(1, 0.6, 0.3)
+	#elif _state == State.PUNISH:
+		#col = Color(1, 0.2, 0.2)
+	#elif _state == State.COOLDOWN:
+		#col = Color(0.7, 0.7, 0.7)
+#
+	#print(info)
+#
+	#if _player.has_method("set_director_debug_text"):
+		#_player.call("set_director_debug_text", info, col)
 		
 ##debug spheres for anchors 
 #func _create_debug_markers() -> void:
@@ -718,3 +719,80 @@ func get_awareness_target() -> Node3D:
 		return _manifested
 	return null
 	
+func _ray_dist(space_state: PhysicsDirectSpaceState3D, from_pos: Vector3, dir: Vector3, max_len: float, exclude: Array) -> float:
+	var to_pos: Vector3 = from_pos + dir * max_len
+
+	var q := PhysicsRayQueryParameters3D.create(from_pos, to_pos)
+	q.collision_mask = wall_probe_mask
+	q.exclude = exclude
+
+	var res: Dictionary = space_state.intersect_ray(q)
+	if res.is_empty():
+		return max_len
+
+	# Godot 4.x intersect_ray returns a Dictionary with keys like "position"
+	var hit_pos: Vector3 = res["position"]
+	return from_pos.distance_to(hit_pos)
+
+
+func _orient_enemy_back_to_wall(enemy: Node3D) -> void:
+	if enemy == null:
+		return
+
+	var space_state: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
+
+	var origin: Vector3 = enemy.global_position
+	origin.y = wall_probe_height
+
+	# 4 cardinal directions (maze-friendly)
+	var dirs: Array[Vector3] = [
+		Vector3(1, 0, 0),   # 0: +X
+		Vector3(-1, 0, 0),  # 1: -X
+		Vector3(0, 0, 1),   # 2: +Z
+		Vector3(0, 0, -1)   # 3: -Z
+	]
+
+	# measure wall distance in each direction (index-based, no dict with Vector keys)
+	var dists: Array[float] = []
+	dists.resize(dirs.size())
+
+	var exclude: Array = [enemy]
+
+	for i in range(dirs.size()):
+		dists[i] = _ray_dist(space_state, origin, dirs[i], wall_probe_length, exclude)
+
+	# player direction on XZ plane
+	var to_player: Vector3 = _player.global_position - enemy.global_position
+	to_player.y = 0.0
+	if to_player.length() > 0.0001:
+		to_player = to_player.normalized()
+	else:
+		to_player = Vector3.ZERO
+
+	var best_i: int = 0
+	var best_score: float = -1e20
+
+	for i in range(dirs.size()):
+		var f: Vector3 = dirs[i]
+		var back_i: int = i ^ 1  # pairs 0<->1 and 2<->3
+
+		var back_d: float = dists[back_i]  # smaller = wall closer behind
+		var front_d: float = dists[i]      # bigger = more open in front
+
+		var player_dot: float = 0.0
+		if to_player != Vector3.ZERO:
+			player_dot = f.dot(to_player)  # 1 = facing player, -1 = away
+
+		# normalize to 0..1-ish
+		var back_score: float = 1.0 - (back_d / wall_probe_length)   # want high
+		var front_score: float = front_d / wall_probe_length         # want high
+
+		# tune weights here
+		var score: float = (1.5 * back_score) + (1.0 * front_score) + (0.6 * player_dot)
+
+		if score > best_score:
+			best_score = score
+			best_i = i
+
+	var best_f: Vector3 = dirs[best_i]
+	enemy.look_at(enemy.global_position + best_f, Vector3.UP)

@@ -1,4 +1,6 @@
-[gd_scene load_steps=4 format=3 uid="uid://th2etnrw2wps"]
+[gd_scene load_steps=5 format=3 uid="uid://th2etnrw2wps"]
+
+[ext_resource type="PackedScene" uid="uid://dheo24dm6js7" path="res://assets/enemy.glb" id="1_3gvst"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gqquq"]
 albedo_color = Color(0.6377782, 0, 0.050292075, 1)
@@ -7,12 +9,14 @@ albedo_color = Color(0.6377782, 0, 0.050292075, 1)
 material = SubResource("StandardMaterial3D_gqquq")
 size = Vector3(0.7, 2.5, 1)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_gqquq"]
-size = Vector3(0.7203369, 2.4825325, 1)
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_3gvst"]
+radius = 0.3
+height = 1.7670307
 
 [node name="Enemy" type="StaticBody3D" groups=["enemy"]]
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+visible = false
 mesh = SubResource("BoxMesh_gqquq")
 
 [node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
@@ -20,5 +24,8 @@ visible = false
 autoplay = true
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.014953613, -0.0022602081, 0)
-shape = SubResource("BoxShape3D_gqquq")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.014953613, -0.026325703, -0.12654972)
+shape = SubResource("CapsuleShape3D_3gvst")
+
+[node name="enemy" parent="." instance=ExtResource("1_3gvst")]
+transform = Transform3D(-1.825, -1.5291862e-08, -1.5881204e-07, 0, 1.816598, -0.1749185, 1.5954657e-07, -0.1749185, -1.816598, 0, 0.6602899, 0)
