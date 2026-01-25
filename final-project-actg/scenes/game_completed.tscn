@@ -1,8 +1,10 @@
-[gd_scene load_steps=11 format=3 uid="uid://p0ad6q8kk1vn"]
+[gd_scene load_steps=13 format=3 uid="uid://p0ad6q8kk1vn"]
 
 [ext_resource type="Texture2D" uid="uid://efe801lj1u36" path="res://assets/images/Untitled design.png" id="1_0dmgc"]
 [ext_resource type="Script" uid="uid://de26pyyjut3yr" path="res://scripts/game_completed.gd" id="1_ixxsr"]
 [ext_resource type="FontFile" uid="uid://dv2rj5cx0dgxs" path="res://assets/HelpMe.ttf" id="3_c4i75"]
+[ext_resource type="Script" uid="uid://bcgcv3a8kntd0" path="res://scripts/ui_hover_sfx.gd" id="4_c4i75"]
+[ext_resource type="AudioStream" uid="uid://hhxhe8lea3k5" path="res://assets/audio/first_cue.mp3" id="4_sx7p3"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7m3ot"]
 content_margin_left = 16.0
@@ -74,6 +76,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_irg28")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_tbwuq")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_racf3")
 text = "Try again"
+script = ExtResource("4_c4i75")
 
 [node name="Quit" type="Button" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
@@ -88,6 +91,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_irg28")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_ixxsr")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_sx7p3")
 text = "quit"
+script = ExtResource("4_c4i75")
 
 [node name="Label" type="Label" parent="."]
 layout_mode = 0
@@ -101,6 +105,10 @@ theme_override_font_sizes/font_size = 56
 text = "YOU RAN AWAY THIS TIME..."
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("4_sx7p3")
+autoplay = true
 
 [connection signal="pressed" from="CenterContainer/VBoxContainer/TryAgain" to="." method="_on_try_again_pressed"]
 [connection signal="pressed" from="CenterContainer/VBoxContainer/Quit" to="." method="_on_quit_pressed"]

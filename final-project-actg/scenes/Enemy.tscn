@@ -1,6 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://th2etnrw2wps"]
+[gd_scene load_steps=7 format=3 uid="uid://th2etnrw2wps"]
 
 [ext_resource type="PackedScene" uid="uid://dheo24dm6js7" path="res://assets/enemy.glb" id="1_3gvst"]
+[ext_resource type="PackedScene" uid="uid://dsujajj2nwhjo" path="res://assets/images/enemyy.glb" id="2_55jtl"]
+[ext_resource type="PackedScene" uid="uid://dw2bsds7xdm2x" path="res://assets/images/ddddd.glb" id="3_mpr68"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gqquq"]
 albedo_color = Color(0.6377782, 0, 0.050292075, 1)
@@ -27,5 +29,13 @@ autoplay = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.014953613, -0.026325703, -0.12654972)
 shape = SubResource("CapsuleShape3D_3gvst")
 
-[node name="enemy" parent="." instance=ExtResource("1_3gvst")]
+[node name="enemy1" parent="." instance=ExtResource("1_3gvst")]
 transform = Transform3D(-1.825, -1.5291862e-08, -1.5881204e-07, 0, 1.816598, -0.1749185, 1.5954657e-07, -0.1749185, -1.816598, 0, 0.6602899, 0)
+visible = false
+
+[node name="enem2" parent="." instance=ExtResource("2_55jtl")]
+transform = Transform3D(-1.82, -1.5249967e-08, -1.5837695e-07, 0, 1.8116212, -0.17443927, 1.5910946e-07, -0.17443927, -1.8116212, 0, 0.66, 0)
+visible = false
+
+[node name="enemy" parent="." instance=ExtResource("3_mpr68")]
+transform = Transform3D(-1.82, -1.5249967e-08, -1.5837695e-07, 0, 1.8116212, -0.17443927, 1.5910946e-07, -0.17443927, -1.8116212, 0, 0.55, 0)

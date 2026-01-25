@@ -1,6 +1,7 @@
 extends Control
 
 func _ready() -> void:
+	AudioManager.stop_all_audio_for_win()
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 func _on_try_again_pressed() -> void:

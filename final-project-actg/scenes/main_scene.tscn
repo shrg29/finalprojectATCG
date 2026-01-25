@@ -28,7 +28,7 @@ ambient_light_energy = 0.3
 fog_enabled = true
 fog_light_color = Color(0.20612639, 0.2712959, 0.28601545, 1)
 fog_light_energy = 0.65
-fog_density = 0.0174
+fog_density = 0.03
 fog_sky_affect = 0.146
 fog_height = 1.0
 fog_height_density = 0.6
@@ -78,8 +78,6 @@ size = Vector3(102.7357, 0.1, 100.14758)
 environment = SubResource("Environment_4asn1")
 
 [node name="Maze" parent="." instance=ExtResource("1_c16ls")]
-maze_width = 5
-maze_height = 5
 
 [node name="MoonLight" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.8660254, -0.35355338, 0.35355338, 0, 0.70710677, 0.70710677, -0.5, -0.6123724, 0.6123724, -0.2537079, 1.2563438, -0.6434746)
@@ -138,11 +136,6 @@ skeleton = NodePath("../..")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.93675995, 0.28082275, -0.0029907227)
 shape = SubResource("BoxShape3D_tmr53")
 
-[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
-stream = ExtResource("5_e1cbu")
-volume_db = -12.101
-autoplay = true
-
 [node name="EnemyDirector" type="Node3D" parent="."]
 script = ExtResource("6_mngbo")
 maze_path = NodePath("../Maze")
@@ -158,5 +151,10 @@ player_path = NodePath("../Player")
 cue_ui_path = NodePath("../CueUi")
 collectible_scene = ExtResource("2_c1pb6")
 cue1_text = "The breathing you hear is not yours."
-cue2_text = "Your way out of this nightmare is closer than you think.."
+cue2_text = "The way out of this nightmare is closer than you think.."
 cue3_text = "You can run ... but should you?"
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("5_e1cbu")
+volume_db = -9.103
+autoplay = true

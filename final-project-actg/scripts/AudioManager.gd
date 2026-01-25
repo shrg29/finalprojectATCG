@@ -16,10 +16,13 @@ var _is_active := false
 
 @onready var movement_music: AudioStream = preload("res://assets/audio/walking.mp3")
 #udio system (3 layers)
-@onready var cue_far: AudioStream = preload("res://assets/audio/second (mp3cut.net).mp3")
+@onready var cue_far: AudioStream = preload("res://assets/audio/creepyeepy.mp3")
 @onready var cue_breath: AudioStream = preload("res://assets/audio/breathing.mp3")
 @onready var sfx_jump1: AudioStream = preload("res://assets/audio/jumpscare.mp3")
 @onready var sfx_jump2: AudioStream = preload("res://assets/audio/punish.mp3")
+@onready var sfx_pickup: AudioStream = preload("res://assets/audio/equip.mp3")
+@onready var sfx_ui_hover: AudioStream = preload("res://assets/audio/hover.mp3")
+
 @export var sfx_bus := "SFX"
 
 
@@ -28,8 +31,8 @@ var _is_active := false
 @export var enemy_active_db := -8.0
 @export var enemy_off_db := -40.0
 
-@export var breath_pitch_mid := 0.91
-@export var breath_pitch_near := 1.2
+@export var breath_pitch_mid := 1.1
+@export var breath_pitch_near := 0.9
 @export var pitch_fade_speed := 6.0
 
 @export var breath_db_mid := -8.0
@@ -48,7 +51,7 @@ var _p_far: AudioStreamPlayer
 var _p_breath: AudioStreamPlayer
 
 var _t_far := -10.0
-var _t_breath := -40.0
+var _t_breath := -50.0
 var _t_breath_pitch := 1.0
 
 #state for far cue "attack"
@@ -199,6 +202,19 @@ func play_jumpscare() -> void:
 	p2.finished.connect(p2.queue_free)
 	p2.play()
 
+#func play_sfx_pickup(stream: AudioStream, volume_db: float = 0.0, pitch: float = 1.0) -> void:
+	#if stream == null:
+		#return
+#
+	#var p := AudioStreamPlayer.new()
+	#p.bus = sfx_bus
+	#p.stream = stream
+	#p.volume_db = volume_db
+	#p.pitch_scale = pitch
+	#add_child(p)
+	#p.finished.connect(p.queue_free)
+	#p.play()
+
 
 func stop_all_audio_for_win() -> void:
 	# Movement music
@@ -221,3 +237,15 @@ func stop_all_audio_for_win() -> void:
 	_is_active = false
 	_target_db = fade_out_db
 	clear_enemy_audio()
+
+# AudioManager.gd
+func play_ui_sfx(stream: AudioStream, volume_db: float = -10.0) -> void:
+	if stream == null:
+		return
+	var p := AudioStreamPlayer.new()
+	p.bus = sfx_bus # your "SFX" bus
+	p.stream = stream
+	p.volume_db = volume_db
+	add_child(p)
+	p.finished.connect(p.queue_free)
+	p.play()

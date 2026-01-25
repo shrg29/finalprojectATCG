@@ -1,8 +1,10 @@
-[gd_scene load_steps=15 format=3 uid="uid://db0y660270my1"]
+[gd_scene load_steps=18 format=3 uid="uid://db0y660270my1"]
 
 [ext_resource type="Script" uid="uid://lftv3tgf441i" path="res://scripts/main_menu.gd" id="1_bqqt6"]
 [ext_resource type="Texture2D" uid="uid://efe801lj1u36" path="res://assets/images/Untitled design.png" id="2_wu84c"]
 [ext_resource type="FontFile" uid="uid://dv2rj5cx0dgxs" path="res://assets/HelpMe.ttf" id="4_8ln24"]
+[ext_resource type="Script" uid="uid://bcgcv3a8kntd0" path="res://scripts/ui_hover_sfx.gd" id="4_rtw2f"]
+[ext_resource type="AudioStream" uid="uid://hhxhe8lea3k5" path="res://assets/audio/first_cue.mp3" id="4_wu84c"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wu84c"]
 content_margin_left = 16.0
@@ -31,6 +33,8 @@ border_color = Color(0.8, 0.8, 0.8, 0)
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_oa1go"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_tbmy8"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_lgwnu"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_jk1qb"]
 
@@ -99,6 +103,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_8ln24")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_bqqt6")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_wu84c")
 text = "START"
+script = ExtResource("4_rtw2f")
 
 [node name="instructions" type="Button" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
@@ -113,6 +118,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_8ln24")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_8ln24")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_rtw2f")
 text = "instructions"
+script = ExtResource("4_rtw2f")
 
 [node name="quit" type="Button" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
@@ -127,15 +133,16 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_8ln24")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_oa1go")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_tbmy8")
 text = "quit"
+script = ExtResource("4_rtw2f")
 
 [node name="InstructionsPanel" type="Panel" parent="."]
-visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_lgwnu")
 
 [node name="TextEdit" type="RichTextLabel" parent="InstructionsPanel"]
 layout_mode = 1
@@ -171,6 +178,11 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_8ln24")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_jk1qb")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_5dd4i")
 text = "Okay"
+script = ExtResource("4_rtw2f")
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("4_wu84c")
+autoplay = true
 
 [connection signal="pressed" from="CenterContainer/VBoxContainer/start" to="." method="_on_start_pressed"]
 [connection signal="pressed" from="CenterContainer/VBoxContainer/instructions" to="." method="_on_instructions_pressed"]

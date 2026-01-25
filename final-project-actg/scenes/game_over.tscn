@@ -1,8 +1,10 @@
-[gd_scene load_steps=11 format=3 uid="uid://5acvhpdvceqw"]
+[gd_scene load_steps=13 format=3 uid="uid://5acvhpdvceqw"]
 
 [ext_resource type="Script" uid="uid://dawoflglm0i07" path="res://scripts/game_over.gd" id="1_racf3"]
 [ext_resource type="Texture2D" uid="uid://2peducl7f6mp" path="res://assets/images/Untitled design (1)tyyy.png" id="1_tbwuq"]
 [ext_resource type="FontFile" uid="uid://dv2rj5cx0dgxs" path="res://assets/HelpMe.ttf" id="3_racf3"]
+[ext_resource type="Script" uid="uid://bcgcv3a8kntd0" path="res://scripts/ui_hover_sfx.gd" id="4_7m3ot"]
+[ext_resource type="AudioStream" uid="uid://hhxhe8lea3k5" path="res://assets/audio/first_cue.mp3" id="4_racf3"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7m3ot"]
 content_margin_left = 16.0
@@ -72,6 +74,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_irg28")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_tbwuq")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_racf3")
 text = "Try again"
+script = ExtResource("4_7m3ot")
 
 [node name="GiveUp" type="Button" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
@@ -86,6 +89,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_irg28")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_7m3ot")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_v3hpu")
 text = "Give up"
+script = ExtResource("4_7m3ot")
 
 [node name="Label" type="Label" parent="."]
 layout_mode = 0
@@ -97,6 +101,10 @@ theme_override_colors/font_color = Color(0.68235296, 0.68235296, 0.68235296, 1)
 theme_override_fonts/font = ExtResource("3_racf3")
 theme_override_font_sizes/font_size = 111
 text = "MHM.. TASTY..."
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("4_racf3")
+autoplay = true
 
 [connection signal="pressed" from="CenterContainer/VBoxContainer/TryAgain" to="." method="_on_try_again_pressed"]
 [connection signal="pressed" from="CenterContainer/VBoxContainer/GiveUp" to="." method="_on_give_up_pressed"]

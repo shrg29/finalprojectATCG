@@ -18,7 +18,7 @@ enum State { COOLDOWN, ANCHORED, MANIFESTED, PUNISH }
 @export var debug_print_every := 0.5 #seconds (console spam limiter)
 
 #anchor generation
-@export var anchors_count := 120
+@export var anchors_count := 100
 @export var anchor_y := 1.0
 
 @export var anchor_zone_scene: PackedScene
@@ -46,7 +46,7 @@ var _awareness_target: Node3D = null
 @export var far_dist := 26.0
 @export var mid_dist := 15.0
 @export var near_dist := 8.0
-@export var min_pick_distance := 18.0      #anchors must be at least this far when chosen
+@export var min_pick_distance := 10.0      #anchors must be at least this far when chosen
 @export var max_pick_distance := 42.0     #optional cap
 @export var pick_attempts := 40            #tries before fallback
 

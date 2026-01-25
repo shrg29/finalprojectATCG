@@ -1,10 +1,15 @@
-[gd_scene load_steps=4 format=3 uid="uid://b4ti6580bj2h8"]
+[gd_scene load_steps=5 format=3 uid="uid://b4ti6580bj2h8"]
 
 [ext_resource type="Script" uid="uid://calvk85iyfxhl" path="res://scripts/collectible.gd" id="1_bkg8t"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_k2x07"]
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bkg8t"]
+albedo_color = Color(0.3658859, 0.4713869, 0.42418414, 1)
+roughness = 0.52
+
 [sub_resource type="SphereMesh" id="SphereMesh_bkg8t"]
+material = SubResource("StandardMaterial3D_bkg8t")
 radius = 0.3
 height = 0.6
 
