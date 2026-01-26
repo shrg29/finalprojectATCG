@@ -4,7 +4,7 @@ extends CanvasLayer
 var _open := false
 
 func _ready():
-	process_mode = Node.PROCESS_MODE_ALWAYS  # so it works while paused
+	process_mode = Node.PROCESS_MODE_ALWAYS  
 	hide()
 
 func show_message(text: String) -> void:
@@ -12,7 +12,6 @@ func show_message(text: String) -> void:
 	label.text = text
 	show()
 	get_tree().paused = true
-	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 func close() -> void:
 	_open = false
@@ -24,14 +23,8 @@ func _unhandled_input(event):
 	if not _open:
 		return
 
-	# ESC
+	#ESC
 	if event.is_action_pressed("ui_cancel"):
-		close()
-		get_viewport().set_input_as_handled()
-		return
-
-	# Any mouse click
-	if event is InputEventMouseButton and event.pressed:
 		close()
 		get_viewport().set_input_as_handled()
 		return

@@ -66,7 +66,7 @@ size = Vector3(102.7357, 0.1, 100.14758)
 
 [node name="MainScene" type="Node3D"]
 
-[node name="WorldEnvironment2" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_6wevv")
 
 [node name="Maze" parent="." instance=ExtResource("1_c16ls")]
